@@ -23,27 +23,35 @@ const client = new Discord.Client();
 
 var mafiaso; //not sure 
 var memNum; //not sure
+
+//  FLAGS
+var flag1s = 0; //toggles if 1s is started (0-off, 1-on)
 var ranFlag = 0; //keeps randomizer from running over itself 
+
+//  ARRAYS & MATRIXES
 var playerArray = [6]; //holds player's names
 var voteArray = [6]; //holds player's votes
 var countArray = [6]; //holds how many people voted for who
 var mafLocation = 0; //holds player array location of mafiaso
 var scoreArray = [6]; //holds score
 var sortedScore = [6][2]; //sorted score for endgame report
-const pongresponses = ['**pong mothafucka**', 'pong', 'ping, ping, ping.  Who is it?', 'DON T TOUCH ME', 'https://media.giphy.com/media/l2YWxte7sJB2XuE8M/giphy.gif', 'yeah, yeah, yeah', 'https://media.tenor.com/images/2feea74041feaa70ca7221ae28065f15/tenor.gif', 'https://media.giphy.com/media/xj7FbQfedsi3e/200.gif', 'https://media.giphy.com/media/tSniEbOGfuCnm/giphy.gif', 'https://media.giphy.com/media/hIaC7H5bIFkVa/giphy.gif', 'https://media.giphy.com/media/3o6ZtaZt380S8DlZjG/giphy.gif', 'http://66.media.tumblr.com/b8b71d6eb11c497405c7d90008522e47/tumblr_mh1rlaCmad1s446qto1_500.gif', 'https://media.tenor.com/images/ee97de4ccda02c9666391ff2ec98d5b1/tenor.gif', 'https://media.tenor.com/images/f5889ae897ec5142e8c8bd391de9d025/tenor.gif', 'https://media.giphy.com/media/d1E2qvruXFtGi6A0/giphy.gif'];
+const pongresponses = ['**pong mothafucka**', 'pong', 'ping, ping, ping.  Who is it?', 'DON T TOUCH ME', 'how bout go ping yourself', '||HA, made you look!||', 'https://media.giphy.com/media/l2YWxte7sJB2XuE8M/giphy.gif', 'yeah, yeah, yeah', 'https://media.tenor.com/images/2feea74041feaa70ca7221ae28065f15/tenor.gif', 'https://media.giphy.com/media/xj7FbQfedsi3e/200.gif', 'https://media.giphy.com/media/tSniEbOGfuCnm/giphy.gif', 'https://media.giphy.com/media/hIaC7H5bIFkVa/giphy.gif', 'https://media.giphy.com/media/3o6ZtaZt380S8DlZjG/giphy.gif', 'http://66.media.tumblr.com/b8b71d6eb11c497405c7d90008522e47/tumblr_mh1rlaCmad1s446qto1_500.gif', 'https://media.tenor.com/images/ee97de4ccda02c9666391ff2ec98d5b1/tenor.gif', 'https://media.tenor.com/images/f5889ae897ec5142e8c8bd391de9d025/tenor.gif', 'https://media.giphy.com/media/d1E2qvruXFtGi6A0/giphy.gif'];
+const acknowledges = ['alright, alright, alright', 'Sure thing, boss', 'I gotchu', 'yup, yup', 'finally!', 'is this my purpose?', 'ACKNOWLEDGED', 'I read you', 'Loud and clear'];
+const intro1s = ['1s queue has started - you can use "!1sme" to get added and "!1sdone" to start the 1s ladder and end the queue'];
+
 const randomfullarray = [
     ['Game Speed', 2, 'Slow-Mo', 'Time Warp'],
     ['Ball Max Speed', 3, 'Slow', 'Fast', 'Super Fast'],
-    ['Ball Type', 5, 'Cube', 'Puck', 'Basketball', 'Beach B', 'Anniversary'],
+    ['Ball Type', 5, 'Cube', 'Puck', 'Basketball', 'Beach Ball', 'Anniversary'],
     ['Ball Physics', 5, 'Light', 'Heavy', 'Super Light', 'Curveball','Beach Ball Curve'],
     ['Ball Size', 4, 'Small', 'Medium', 'Large', 'Gigantic'],
     ['Ball Bounciness', 3, 'Low', 'High', 'Super High'],
     ['Boost Amount', 4, 'No Boost', 'Unlimited', 'Recharge (Slow)', 'Recharge (Fast)'],
     ['Rumble', 6, 'Default', 'Slow', 'Civilized', 'Destruction Derby', 'Spring Loaded', 'Spikes Only'],
     ['Boost Strength', 3, '1.5X', '2X', '10X'],
-    ['Gravity', 3, 'Low', 'High',],
+    ['Gravity', 3, 'Low', 'High', 'Super High'],
     ['Demolish', 4, 'Disabled', 'Friendly Fire', 'On Contact', 'On Contact (FF)'],
-    ['Respawn Time', 3, '2 Seconds','1 Second', 'Disable Goal Reset']
+    ['Respawn Time', 3, '2 Seconds', '1 Second', 'Disable Goal Reset']
 ];
 
 /**
@@ -119,6 +127,30 @@ client.on('message', message => {
                 ranFlag = 0;
             }
         }
+
+
+
+		//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-     1s Ladder
+        if (message.content === '!start1s') {  //Initializes the queue
+			flag1s = 1;
+            message.channel.send(intro1s[0]);
+		}
+		if (message.content === '!1sme') {  //Adds player to ladder
+			if(flags1s == 0){
+				message.channel.send('You need to use the "!start1s" command to initialize the ladder');
+			} else {
+				
+				
+			}
+		}
+		if (message.content === '!1sdone') {  //Starts the ladder
+			if(flags1s == 0){
+				message.channel.send('You havent even used the "!start1s" command to initialize the ladder yet');
+			} else {
+				
+				
+			}
+		}
 
 
 
