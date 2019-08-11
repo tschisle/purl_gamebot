@@ -3,10 +3,10 @@
  */
 
 /*Games:
- - Mafia (assign mafia, record votes and points) ✓
+ - Mafia (assign mafia, record votes and points) 
  - 6mans (set up teams and record W/L) 
- - 1s ladder
- - random mutators
+ - 1s ladder  ✓
+ - random mutators  ✓
  - 
 */
 
@@ -35,9 +35,21 @@ var countArray = [6]; //holds how many people voted for who
 var mafLocation = 0; //holds player array location of mafiaso
 var scoreArray = [6]; //holds score
 var sortedScore = [6][2]; //sorted score for endgame report
+var bracket1s = [64][2]; //holds player and matchup value (random initial matchup, rest is first come, first serve)
+var max1s = 1; //records how many people sign up (starts at one since the 1s creator auto signs up)
+var halfmax = 0; //bracket set up variable 
+var userfound = 0; //flag for notifying if user duplication is imminent 
+var tempplayer = 0; //holds tempplayer info
+var tempbracket = 0; //holds temp bracket info
+var winloc = 0; //holds latest win value
+var winMatch = 0; //holds people waiting in queue
+var lossloc = 0; //holds latest loss value
+var lossMatch = 0; //holds people waiting in queue
+var finals = 0; //holds the number of people who have been kicked from the ladder
 const pongresponses = ['**pong mothafucka**', 'pong', 'ping, ping, ping.  Who is it?', 'DON T TOUCH ME', 'how bout go ping yourself', '||HA, made you look!||', 'https://media.giphy.com/media/l2YWxte7sJB2XuE8M/giphy.gif', 'yeah, yeah, yeah', 'https://media.tenor.com/images/2feea74041feaa70ca7221ae28065f15/tenor.gif', 'https://media.giphy.com/media/xj7FbQfedsi3e/200.gif', 'https://media.giphy.com/media/tSniEbOGfuCnm/giphy.gif', 'https://media.giphy.com/media/hIaC7H5bIFkVa/giphy.gif', 'https://media.giphy.com/media/3o6ZtaZt380S8DlZjG/giphy.gif', 'http://66.media.tumblr.com/b8b71d6eb11c497405c7d90008522e47/tumblr_mh1rlaCmad1s446qto1_500.gif', 'https://media.tenor.com/images/ee97de4ccda02c9666391ff2ec98d5b1/tenor.gif', 'https://media.tenor.com/images/f5889ae897ec5142e8c8bd391de9d025/tenor.gif', 'https://media.giphy.com/media/d1E2qvruXFtGi6A0/giphy.gif'];
 const acknowledges = ['alright, alright, alright', 'Sure thing, boss', 'I gotchu', 'yup, yup', 'finally!', 'is this my purpose?', 'ACKNOWLEDGED', 'I read you', 'Loud and clear'];
 const intro1s = ['1s queue has started - you can use "!1sme" to get added and "!1sdone" to start the 1s ladder and end the queue'];
+const disappointed = ['http://giphygifs.s3.amazonaws.com/media/KJ6evAwpTjexi/giphy.gif', 'thats tough kid', 'maybe next time', 'https://media.giphy.com/media/xT9KVluGDHZvOk0tdC/giphy.gif', 'https://media.giphy.com/media/XFgNKqN3BaHLi/giphy.gif'];
 
 const randomfullarray = [
     ['Game Speed', 2, 'Slow-Mo', 'Time Warp'],
@@ -134,22 +146,195 @@ client.on('message', message => {
         if (message.content === '!start1s') {  //Initializes the queue
 			flag1s = 1;
             message.channel.send(intro1s[0]);
+			bracket1s[0][0] = message.author;
 		}
 		if (message.content === '!1sme') {  //Adds player to ladder
 			if(flags1s == 0){
 				message.channel.send('You need to use the "!start1s" command to initialize the ladder');
 			} else {
-				
-				
+				for(var o1 = 0; o1 < max1s; o1++) { //checks if player is already in bracket
+					if(message.author === bracket1s[o1][0]){
+						userfound = 1;
+						if(o1 == 0){
+							message.channel.send('HA, ' + bracket1s[o1][0] + ', you made it so youre already in it!');
+						} else{
+							message.channel.send('Yo, ' + bracket1s[o1][0] + ', you already signed up!'); 
+						}
+					} 					
+				}
+				if(userfound == 0){  //adds player to bracket
+					max1s++;
+					bracket1s[max1s][0] = message.author;
+					memNum = Math.floor(Math.random() * acknowledges.length);
+					message.channel.send(acknowledges[memNum] + '  ' + bracket1s[max1s][0]); //sends acknowledgement to player 
+				} else {
+					userfound = 0;
+				}
 			}
 		}
 		if (message.content === '!1sdone') {  //Starts the ladder
 			if(flags1s == 0){
 				message.channel.send('You havent even used the "!start1s" command to initialize the ladder yet');
 			} else {
-				
-				
+				if(max1s < 4){
+					message.channel.send('https://media.tenor.com/images/1828ae6e4dcb7e46eebdfaaddec0efa5/tenor.gif');
+				}
+				for(var o4 = 0; o4 < max1s; o4++){ //clears bracket info
+					bracket1s[o4][1] = 0;
+				}
+				message.channel.send('**' + max1s + '** people have entered this 1s ladder!'); //Notes how many players are in the ladder
+				if(max1s%2){
+					bracket1s[0][1] = 'w 0'; //pushed to winner's bracket (bye round)
+					winMatch = 1;
+				}
+				halfmax = Math.floor(max1s / 2);				
+				for(var o3 = 1; o3 <= halfmax; o3++){
+					do{
+						memNum = Math.floor(Math.random() * max1s); 
+					}while(bracket1s[memNum][1] === 0); //randomly chooses a player
+					bracket1s[memNum][1] = 's ' + o3; //s for Start
+					tempplayer = memNum;
+					do{
+						memNum = Math.floor(Math.random() * max1s);
+					}while(bracket1s[memNum][1] === 0); 
+					bracket1s[memNum][1] = 's ' + o3;
+					bracket1s[tempplayer][0].send('Youre playing ' + bracket1s[memNum][0]);
+					bracket1s[tempplayer][0].send('Use the "!1swon" command if you win.  I believe in you!');
+					bracket1s[memNum][0].send('Youre playing ' + bracket1s[tempplayer][0]);
+					bracket1s[memNum][0].send('Use the "!1swon" command if you win.  You can do it!');
+				}
 			}
+		}
+		if (message.content === '!1swon') {  //Reports and updates the bracket
+			userfound = 0;
+			if(finals === (max1s - 2)){
+				message.channel.send('**' + message.author + '** won!');
+				message.channel.send('Congradulations on completing the 1s ladder!');
+				finals = 0;
+				max1s = 0;
+				winMatch = 0;
+				lossMatch = 0;
+				winloc = 0;
+				lossloc = 0;				
+			}
+			for(var o5 = 0; o5 < max1s; o5++){ //finds winner in matrix
+				if(message.author === bracket1s[o5][0]){
+					userfound = 1;
+					tempbracket = bracket1s[o5][1]; //bracket info
+					var wintest = bracket1s[o5][1].split(' ');
+					if(wintest[0] === 'w'){ //checks if in winners or losers bracket
+						if(winMatch === 0){ //checks if someone in winners queue is waiting
+							bracket1s[o5][1] = 'w ' + winloc; //updates bracket info
+							winMatch++;  //adds player to winners queue
+						} else {
+							for(var o7 = 0; o7 < max1s;	o7++){ 
+								if(bracket1s[o7][1] === ('w ' + winloc)){  //finds player in winners queue
+									bracket1s[o7][0].send('Youre playing ' + bracket1s[o5][0]);
+									bracket1s[o7][0].send('Use the "!1swon" command if you win.  I believe in you!');
+									bracket1s[o5][0].send('Youre playing ' + bracket1s[o7][0]);
+									bracket1s[o5][0].send('Use the "!1swon" command if you win.  You can do it!');
+									bracket1s[o7][1] = 'w ' + winloc; //updates bracket info for newest winner
+									winloc++; //updates winner location
+									winMatch = 0; //updates winners player queue
+								}
+							}
+						}
+					} else {
+						if(lossMatch === 0){ //checks if someone in losers queue is waiting
+							bracket1s[o5][1] = 'l ' + lossloc; //updates bracket info
+							lossMatch++; //adds player to losers queue
+						} else {
+							for(var o8 = 0; o8 < max1s;	o8++){
+								if(bracket1s[o8][1] === ('w ' + lossloc)){ //finds player in losers queue
+									bracket1s[o8][0].send('Youre playing ' + bracket1s[o5][0]);
+									bracket1s[o8][0].send('Use the "!1swon" command if you win.  I believe in you!');
+									bracket1s[o5][0].send('Youre playing ' + bracket1s[o8][0]);
+									bracket1s[o5][0].send('Use the "!1swon" command if you win.  You can do it!');
+									bracket1s[o8][1] = 'w ' + lossloc; //updates bracket info for newest winner
+									lossloc++; //updates loser location
+									lossMatch = 0; //updates winners player queue
+								}
+							}
+						}
+					}
+				}
+			}
+			for(var o6 = 0; o6 < max1s; o6++){ //finds loser in matrix
+				if(bracket1s[o6][1] === tempbracket){
+					var losstest = bracket1s[o6][1].split(' ');
+					if(losstest[0] === 'w'){
+						if(lossMatch === 0){ //checks if someone in losers queue is waiting
+							bracket1s[o5][1] = 'l ' + lossloc; //updates bracket info
+							lossMatch++;  //adds player to losers queue
+						} else {
+							for(var o9 = 0; o9 < max1s;	o9++){ 
+								if(bracket1s[o9][1] === ('l ' + lossloc)){  //finds player in winners queue
+									bracket1s[o9][0].send('Youre playing ' + bracket1s[o6][0]);
+									bracket1s[o9][0].send('Use the "!1swon" command if you win.  I *really* believe in you this time!');
+									bracket1s[o6][0].send('Youre playing ' + bracket1s[o9][0]);
+									bracket1s[o6][0].send('Use the "!1swon" command if you win.  Maybe you can do it now!');
+									bracket1s[o9][1] = 'w ' + lossloc; //updates bracket info for newest loser
+									lossloc++; //updates loser location
+									lossMatch = 0; //updates losers player queue
+								}
+							}
+						}
+					}else{
+						memNum = Math.floor(Math.random() * disappointed.length); 
+						bracket1s[o6][0].send(disappointed[memNum]);
+						bracket1s[o6][0] = 0;
+						bracket1s[o6][1] = 0;
+					}
+				}
+			}
+			
+			//Checks if player is in ladder
+			if(userfound === 0){
+				message.channel.send('What the heck are you doing, ' + message.author + '?  You shouldve joined when the ladder was open.'); 
+			}
+			
+			//Checks if players are in the finals
+			for(var o10 = 0; o10 < max1s; o10++){
+				if(bracket1s[o10][0] === 0){
+					finals++;
+				}
+			}
+			if(finals === (max1s - 2)){
+				var o11 = 0;
+				while(bracket1s[o11][0] === 0){
+					o11++;
+				}
+				var o12 = max1s;
+				while(bracket1s[o12][0] === 0){
+					o12--;
+				}
+				bracket1s[o11][0].send('Youre playing ' + bracket1s[o12][0]);
+				bracket1s[o11][0].send('Use the "!1swon" command if you win.  You made it to the finals! No pressure!');
+				bracket1s[o12][0].send('Youre playing ' + bracket1s[o11][0]);
+				bracket1s[o12][0].send('Use the "!1swon" command if you win.  You made it to the finals! Youve got this!');
+				//clears rest of bracket
+				bracket1s[o11][0] = 0;
+				bracket1s[o11][1] = 0;
+				bracket1s[o12][0] = 0;
+				bracket1s[o12][1] = 0;
+			} else {
+				finals = 0;
+			}
+		}
+		if((message.content === '!1shalt') { // full stop and clear
+			for(var o13 = 0; o13 < max1s; o13++){
+				bracket1s[o13][0] = 0;
+				bracket1s[o13][1] = 0;
+			}
+			memNum = Math.floor(Math.random() * acknowledgement.length); 
+			message.channel.send(acknowledgement[memNum]);
+			message.channel.send('1s ladder is shut down and cleared');
+			finals = 0;
+			max1s = 0;
+			winMatch = 0;
+			lossMatch = 0;
+			winloc = 0;
+			lossloc = 0;
 		}
 
 
