@@ -10,8 +10,8 @@ const client = new Discord.Client();
 
 var mafiaso;
 var memNum;
-var mafcount[];
-var tempmafcount[];
+var mafcount = [6];
+var tempmafcount = [6];
 var newgameflag = 0;
 var gamecount;
 
