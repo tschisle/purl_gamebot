@@ -56,8 +56,8 @@ client.on('message', message => {
 	//To try to even out mafia assignments while keeping some randomness
 	//NOTE: this adds more time as more and more games are played
 	while(tempmafcount[randomMafia] > 0){
-		randomMafia = Math.floor(Math.random() * totalMafia);
 		tempmafcount[randomMafia]--;
+		randomMafia = Math.floor(Math.random() * totalMafia);
 	}
 	for (var i = 0; i < mafChannel.members.array().length; i++) {
 		if (i == randomMafia){
