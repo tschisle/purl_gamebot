@@ -57,7 +57,7 @@ client.on('message', message => {
 	//NOTE: this adds more time as more and more games are played
 	while(tempmafcount[randomMafia] > 0){
 		randomMafia = Math.floor(Math.random() * totalMafia);
-		tempmafcount--;
+		tempmafcount[randomMafia]--;
 	}
 	for (var i = 0; i < mafChannel.members.array().length; i++) {
 		if (i == randomMafia){
