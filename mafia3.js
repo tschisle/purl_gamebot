@@ -1,7 +1,3 @@
-/**
- * A ping pong bot, whenever you send "ping", it replies "pong".
- */
-
 /*Games:
  - Mafia (assign mafia, record votes and points) 
  - 6mans (set up teams and record W/L) 
@@ -27,6 +23,7 @@ var memNum; //not sure
 //  FLAGS
 var flag1s = 0; //toggles if 1s is started (0-off, 1-on)
 var ranFlag = 0; //keeps randomizer from running over itself 
+var mafleg = 0; //toggles legacy mafia code 
 
 //  ARRAYS & MATRIXES
 var playerArray = [6]; //holds player's names
@@ -72,22 +69,50 @@ const randomfullarray = [
  */
 client.on('ready', () => {
   console.log('I am ready!');
+  
 });
 
 // Create an event listener for messages
 client.on('message', message => {
         const mafServer = client.guilds.get('549958516991983619');
         const mafChannel = mafServer.channels.get('550438621241409552');
-         voteChannel = mafServer.channels.get('550438619983249441');
+        const voteChannel = mafServer.channels.get('550438619983249441');
 
-        // If the message is "ping"
+        //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-     PING
         if (message.content === 'ping') {
-            // Send "pong" to the same channel
             memNum = Math.floor(Math.random() * pongresponses.length);
             message.channel.send(pongresponses[memNum]);
         }
 
-
+		
+		//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-     INFO
+		if (message.content === 'games') {
+			message.channel.send('** ~ Mafia**  [use "!mafia" to learn more] (under developement, use "!mafleg" to switch to legacy code)');
+			message.channel.send('** - 1s Ladder**  [use "!1sladder" to learn more]');
+			message.channel.send('** - Randomizer**  [gives random modifiers for private matches]');
+		}
+		if (message.content === '!mafia') {
+			message.channel.send('*Mafia is a game where one random player attempts to throw a match*');
+			message.channel.send('*The non-mafia, villagers, try to uncover the identity of the mafia*');
+			message.channel.send('*The villagers vote for who they believe the mafia is after the game*');
+			message.channel.send('Join Mafia voice channel (6 player max)');
+			message.channel.send('Use "!newgame" to start a new game of Mafia');
+			message.channel.send('DM me, the bot, your votes');
+			message.channel.send('Use "!reveal" to reveal the mafia');
+			message.channel.send('Use "!endgame" to report scores');
+			message.channel.send('Use "!mafleg" to switch between legacy and latest code **only do so before starting up a game**');
+		}
+		if (message.content === '!1sladder') {
+			message.channel.send('*The ladder is a double elimination bracket without a bracket reset*');
+			message.channel.send('*Currently a 64 player max*'); 
+			message.channel.send('*Initial matches are randomized, every match after is first come first serve*');
+			message.channel.send('Use "!start1s" to begin player queuing');
+			message.channel.send('Use "!1sme" to join the 1s ladder');
+			message.channel.send('Use "!1sdone" to end player queue and begin the ladder');
+			message.channel.send('Use "!1swon" to declare yourself the winner');
+			message.channel.send('Use "!1shalt" to end the ladder prematurely');
+		}
+		
 
         //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-     RANDOM
         if (message.content === '!random') {
@@ -141,8 +166,7 @@ client.on('message', message => {
         }
 
 
-
-		//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-     1s Ladder
+		//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-     1'S LADDER
         if (message.content === '!start1s') {  //Initializes the queue
 			flag1s = 1;
             message.channel.send(intro1s[0]);
@@ -321,7 +345,7 @@ client.on('message', message => {
 				finals = 0;
 			}
 		}
-		if((message.content === '!1shalt') { // full stop and clear
+		if (message.content === '!1shalt') { // full stop and clear
 			for(var o13 = 0; o13 < max1s; o13++){
 				bracket1s[o13][0] = 0;
 				bracket1s[o13][1] = 0;
@@ -338,37 +362,48 @@ client.on('message', message => {
 		}
 
 
-
         //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-     MAFIA
-        /*
-        if (message.content === '!newgame') {
-            // Create Mafia Channel
-            totalMafia = mafChannel.members.array().length;
-            randomMafia = Math.floor(Math.random() * totalMafia);
-            totVotes = 0;
-            for (var i = 0; i < mafChannel.members.array().length; i++) {
-                pNumber = i + 1; //offset
-                mafChannel.sendMessage(mafChannel.members.array()[0][i] + ' - ' + pNumber); //list player's numbers
-                playerArray[i] = mafChannel.members.array()[0][i]; //populating player array
-                voteArray[i] = 0; //clearing votes
-                countArray[i] = 0; //clearing counts
-                mafVotes = 0; //clearing mafia votes
-                mafChannel.sendMessage(' ' + i); //Debug
-                if (i == randomMafia) { //mafia
-                    mafChannel.members.array()[0][i].send('You are the mafiaso.');
-                    mafChannel.members.array()[0][i].send('When everyone is voting, just send me "!vote1" to be displayed as having voted');
-                    currentMafia = mafChannel.members.array()[0][i];
-                    mafLocation = i;
-                } else { //villagers
-                    mafChannel.members.array()[0][i].send('You are a villager.');
-                    for (var b = 0; b < mafChannel.members.array().length; b++) {
-                        mafChannel.members.array()[0][i].send(mafChannel.members.array()[0][b] + ' - ' + pNumber);
-                    }
-                    mafChannel.members.array()[0][i].send('EXAMPLE: "!vote1" is a vote for ' + mafChannel.members.array()[0][0]);
-                }
-            }
+		if (message.content === '!newgame') {
+            if(mafleg = 0){
+				totalMafia = mafChannel.members.array().length;
+				randomMafia = Math.floor(Math.random() * totalMafia);
+				totVotes = 0;
+				for (var i = 0; i < mafChannel.members.array().length; i++) {
+					pNumber = i + 1; //offset
+					message.channel.send(mafChannel.members.array()[0][i] + ' - ' + pNumber); //list player's numbers
+					playerArray[i] = mafChannel.members.array()[0][i]; //populating player array
+					voteArray[i] = 0; //clearing votes
+					countArray[i] = 0; //clearing counts
+					mafVotes = 0; //clearing mafia votes
+					message.channel.send(' ' + i); //Debug
+					if (i == randomMafia) { //mafia
+						mafChannel.members.array()[0][i].send('You are the mafiaso.');
+						mafChannel.members.array()[0][i].send('When everyone is voting, just send me "!vote1" to be displayed as having voted');
+						currentMafia = mafChannel.members.array()[0][i];
+						mafLocation = i;
+					} else { //villagers
+						mafChannel.members.array()[0][i].send('You are a villager.');
+						for (var b = 0; b < mafChannel.members.array().length; b++) {
+							mafChannel.members.array()[0][i].send(mafChannel.members.array()[0][b] + ' - ' + pNumber);
+						}
+						mafChannel.members.array()[0][i].send('EXAMPLE: "!vote1" is a vote for ' + mafChannel.members.array()[0][0]);
+					}
+				}
+			} else {
+				totalMafia = mafChannel.members.array().length
+				randomMafia = Math.floor(Math.random() * totalMafia);
+				for (var i = 0; i < mafChannel.members.array().length; i++) {
+					if (i == randomMafia){
+						mafChannel.members.array()[0,i].send('You are the mafiaso.');
+						currentMafia = mafChannel.members.array()[0,i];
+					} else {
+						mafChannel.members.array()[0,i].send('You are a villager.');
+					}
+	
+				}
+			}
+			
         }
-
         //Updates villagers' scores and records votes
         if (message.channel.type === 'dm') {
             voteChannel.sendMessage(message.author.username + ' says: ' + message.content);
@@ -414,15 +449,22 @@ client.on('message', message => {
         }
         //Updates mafia's score and congradulates winner of round
         if (message.content === '!reveal') {
-            if (currentMafia !== '') {
-                if (countArray[mafLocation] < 3) {
-                    voteChannel.sendMessage(currentMafia + ' was the mafiaso!');
-                    scoreArray[mafLocation] = scoreArray[mafLocation] + 2;
-                } else {
-                    voteChannel.sendMessage('The villagers caught ' + currentMafia + '!');
-                }
-                currentMafia = '';
-            }
+			if(mafleg === 0){
+				if (currentMafia !== '') {
+					if (countArray[mafLocation] < 3) {
+						message.channel.send(currentMafia + ' was the mafiaso!');
+						scoreArray[mafLocation] = scoreArray[mafLocation] + 2;
+					} else {
+						message.channel.send('The villagers caught ' + currentMafia + '!');
+					}
+					currentMafia = '';
+				}
+			} else {
+				if (currentMafia != '') {
+					voteChannel.send(currentMafia + ' was the mafiaso!');
+					currentMafia = '';
+				}
+			}
         }
         if (message.content === '!endgame') {
             var tempName = '';
@@ -446,10 +488,10 @@ client.on('message', message => {
                 }
             }
 
-            voteChannel.sendMessage(sortedScore[0][0] + ' won with ' + sortedScore[0][1] + ' points!');
+            message.channel.send(sortedScore[0][0] + ' won with ' + sortedScore[0][1] + ' points!');
 
             for (var x2 = 1; x2 < mafChannel.members.array().length; x2++) {
-                voteChannel.sendMessage(sortedScore[x2][0] + ' - ' + sortedScore[x2][1]);
+                message.channel.send(sortedScore[x2][0] + ' - ' + sortedScore[x2][1]);
             }
             //Erases Scores
             for (var x3 = 0; x3 < mafChannel.members.array().length; x3++) {
@@ -457,11 +499,17 @@ client.on('message', message => {
                 sortedScore[x3][1] = 0;
             }
         }
-        */
+		if (message.content === '!mafleg') {
+			mafleg = (mafleg + 1)%2;
+			if(mafleg === 0){
+				message.channel.send('Mafia is now using the latest code (*likely unstable*)');
+			} else {
+				message.channel.send('Mafia is now using the legacy code');
+			}
+		}
+        
 
 });
 //cd desktop\donbot
 // Log our bot in using the token from https://discordapp.com/developers/applications/me
-client.login('NTQ5OTU5MTU5ODM2MzExNTgx.D1cL_Q.3yzgxER9KRlk85BxgmFBAuIAHOY');
-)
-}V
+client.login('** token **');
