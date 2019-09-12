@@ -23,6 +23,7 @@ var flag1s = 0; //toggles if 1s is started (0-off, 1-on)
 var ranFlag = 0; //keeps randomizer from running over itself 
 var mafleg = 0; //toggles legacy mafia code 
 var newgameflag = 0; //used to initialize player mafia count
+var mafiagameflag = 0; //used to indicate that a mafia game has started
 
 //  LOOP VARIABLES
 var x;
@@ -40,10 +41,18 @@ var mafVotes = 0;
 var totVotes = 0; //counts votes for mafia
 var tempName = '';
 var tempScore = 0;
+const PointsForSuccessfulMafia = 3;
+const PointsForCorrectVote = 2;
+const PointsForNonMafiaVotedByMajority = -1;
+const PointsForLosingBy3NonMafia = -1;
+const PointsForWinningBy3Mafia = -1;
+const PointsForLosingBy2MoreNonMafia = -1; //stacks
+const PointsForWinningBy2MoreMafia = -1; //stacks
 
 //  ARRAYS & MATRIXES
 var playerArray = [6]; //holds player's names
 var voteArray = [6]; //holds player's votes
+var gameScoreArray = [6][3]; //holds player's reported game scores (bool reported, int player's team, int opposing team)
 var countArray = [6]; //holds how many people voted for who
 var mafLocation = 0; //holds player array location of mafiaso
 var mafcount = [6];  //counts how often a player is mafia
@@ -171,17 +180,17 @@ client.on('message', message => {
         if (message.content === '!start1s') {  //Initializes the queue
 			flag1s = 1;
             message.channel.send(intro1s[0]);
-			bracket1s[0][0] = message.author;
+			bracket1s[0][0] = message.author.id + '';
 		}
 		if (message.content === '!1sme') {  //Adds player to ladder
 			if(flags1s == 0){
 				message.channel.send('You need to use the "!start1s" command to initialize the ladder');
 			} else {
 				for(x = 0; x < max1s; x++) { //checks if player is already in bracket
-					if(message.author === bracket1s[x][0]){
+					if((message.author.id + '') === bracket1s[x][0]){
 						userfound = 1;
 						if(x == 0){
-							message.channel.send('HA, ' + bracket1s[x][0] + ', you made it so youre already in it!');
+							message.channel.send('HA, ' + bracket1s[x][0] + ', you made it so you\'re already in it!');
 						} else{
 							message.channel.send('Yo, ' + bracket1s[x][0] + ', you already signed up!'); 
 						}
@@ -189,7 +198,7 @@ client.on('message', message => {
 				}
 				if(userfound == 0){  //adds player to bracket
 					max1s++;
-					bracket1s[max1s][0] = message.author;
+					bracket1s[max1s][0] = message.author.id + '';
 					memNum = Math.floor(Math.random() * acknowledges.length);
 					message.channel.send(acknowledges[memNum] + '  ' + bracket1s[max1s][0]); //sends acknowledgement to player 
 				} else {
@@ -199,7 +208,7 @@ client.on('message', message => {
 		}
 		if (message.content === '!1sdone') {  //Starts the ladder
 			if(flags1s == 0){
-				message.channel.send('You havent even used the "!start1s" command to initialize the ladder yet');
+				message.channel.send('You haven\'t even used the **!start1s** command to initialize the ladder yet');
 			} else {
 				if(max1s < 4){
 					message.channel.send('https://media.tenor.com/images/1828ae6e4dcb7e46eebdfaaddec0efa5/tenor.gif');
@@ -223,10 +232,10 @@ client.on('message', message => {
 						memNum = Math.floor(Math.random() * max1s);
 					}while(bracket1s[memNum][1] === 0); 
 					bracket1s[memNum][1] = 's ' + x;
-					bracket1s[tempplayer][0].send('Youre playing ' + bracket1s[memNum][0]);
-					bracket1s[tempplayer][0].send('Use the "!1swon" command if you win.  I believe in you!');
-					bracket1s[memNum][0].send('Youre playing ' + bracket1s[tempplayer][0]);
-					bracket1s[memNum][0].send('Use the "!1swon" command if you win.  You can do it!');
+					bracket1s[tempplayer][0].send('You\'re playing ' + bracket1s[memNum][0]);
+					bracket1s[tempplayer][0].send('Use the **!1swon** command if you win.  I believe in you!');
+					bracket1s[memNum][0].send('You\'re playing ' + bracket1s[tempplayer][0]);
+					bracket1s[memNum][0].send('Use the **!1swon** command if you win.  You can do it!');
 				}
 			}
 		}
@@ -254,10 +263,10 @@ client.on('message', message => {
 						} else {
 							for(x1 = 0; x1 < max1s;	x1++){ 
 								if(bracket1s[x1][1] === ('w ' + winloc)){  //finds player in winners queue
-									bracket1s[x1][0].send('Youre playing ' + bracket1s[x][0]);
-									bracket1s[x1][0].send('Use the "!1swon" command if you win.  I believe in you!');
-									bracket1s[x][0].send('Youre playing ' + bracket1s[x1][0]);
-									bracket1s[x][0].send('Use the "!1swon" command if you win.  You can do it!');
+									bracket1s[x1][0].send('You\'re playing ' + bracket1s[x][0]);
+									bracket1s[x1][0].send('Use the **!1swon** command if you win.  I believe in you!');
+									bracket1s[x][0].send('You\'re playing ' + bracket1s[x1][0]);
+									bracket1s[x][0].send('Use the **!1swon** command if you win.  You can do it!');
 									bracket1s[x1][1] = 'w ' + winloc; //updates bracket info for newest winner
 									winloc++; //updates winner location
 									winMatch = 0; //updates winners player queue
@@ -271,10 +280,10 @@ client.on('message', message => {
 						} else {
 							for(x2 = 0; x2 < max1s;	x2++){
 								if(bracket1s[x2][1] === ('w ' + lossloc)){ //finds player in losers queue
-									bracket1s[x2][0].send('Youre playing ' + bracket1s[x][0]);
-									bracket1s[x2][0].send('Use the "!1swon" command if you win.  I believe in you!');
-									bracket1s[x][0].send('Youre playing ' + bracket1s[x2][0]);
-									bracket1s[x][0].send('Use the "!1swon" command if you win.  You can do it!');
+									bracket1s[x2][0].send('You\'re playing ' + bracket1s[x][0]);
+									bracket1s[x2][0].send('Use the **!1swon** command if you win.  I believe in you!');
+									bracket1s[x][0].send('You\'re playing ' + bracket1s[x2][0]);
+									bracket1s[x][0].send('Use the **!1swon** command if you win.  You can do it!');
 									bracket1s[x2][1] = 'w ' + lossloc; //updates bracket info for newest winner
 									lossloc++; //updates loser location
 									lossMatch = 0; //updates winners player queue
@@ -294,10 +303,10 @@ client.on('message', message => {
 						} else {
 							for(x1 = 0; x1 < max1s;	x1++){ 
 								if(bracket1s[x1][1] === ('l ' + lossloc)){  //finds player in winners queue
-									bracket1s[x1][0].send('Youre playing ' + bracket1s[x][0]);
-									bracket1s[x1][0].send('Use the "!1swon" command if you win.  I *really* believe in you this time!');
-									bracket1s[x][0].send('Youre playing ' + bracket1s[x1][0]);
-									bracket1s[x][0].send('Use the "!1swon" command if you win.  Maybe you can do it now!');
+									bracket1s[x1][0].send('You\'re playing ' + bracket1s[x][0]);
+									bracket1s[x1][0].send('Use the **!1swon** command if you win.  I *really* believe in you this time!');
+									bracket1s[x][0].send('You\'re playing ' + bracket1s[x1][0]);
+									bracket1s[x][0].send('Use the **!1swon** command if you win.  Maybe you can do it now!');
 									bracket1s[x1][1] = 'w ' + lossloc; //updates bracket info for newest loser
 									lossloc++; //updates loser location
 									lossMatch = 0; //updates losers player queue
@@ -315,7 +324,7 @@ client.on('message', message => {
 			
 			//Checks if player is in ladder
 			if(userfound === 0){
-				message.channel.send('What the heck are you doing, ' + message.author + '?  You shouldve joined when the ladder was open.'); 
+				message.channel.send('What the heck are you doing, ' + message.author + '?  You should\'ve joined when the ladder was open.'); 
 			}
 			
 			//Checks if players are in the finals
@@ -333,10 +342,10 @@ client.on('message', message => {
 				while(bracket1s[o12][0] === 0){
 					o12--;
 				}
-				bracket1s[o11][0].send('Youre playing ' + bracket1s[o12][0]);
-				bracket1s[o11][0].send('Use the "!1swon" command if you win.  You made it to the finals! No pressure!');
-				bracket1s[o12][0].send('Youre playing ' + bracket1s[o11][0]);
-				bracket1s[o12][0].send('Use the "!1swon" command if you win.  You made it to the finals! Youve got this!');
+				bracket1s[o11][0].send('You\'re playing ' + bracket1s[o12][0]);
+				bracket1s[o11][0].send('Use the **!1swon** command if you win.  You made it to the finals! No pressure!');
+				bracket1s[o12][0].send('You\'re playing ' + bracket1s[o11][0]);
+				bracket1s[o12][0].send('Use the **!1swon** command if you win.  You made it to the finals! You\'ve got this!');
 				//clears rest of bracket
 				bracket1s[o11][0] = 0;
 				bracket1s[o11][1] = 0;
@@ -373,6 +382,7 @@ client.on('message', message => {
 						mafcount[x] = 0;
 					}
 				}
+				mafiagameflag++;
 				for(x = 0; x < mafChannel.members.array().length; x++){
 					tempmafcount[x] = mafcount[x];
 				}
@@ -398,16 +408,16 @@ client.on('message', message => {
 					mafVotes = 0; //clearing mafia votes
 					//message.channel.send(' ' + x); //Debug
 					if (x === randomMafia) { //mafia
-						mafChannel.members.array()[x].send('You are the mafiaso.\nWhen everyone is voting, just send me "!vote1" to be displayed as having voted');
+						mafChannel.members.array()[x].send('You are the mafiaso.\nUse **!score #-#** to report the games score **before you vote**. \nYour team\'s score - the opposing team\'s score\nWhen everyone is voting, just send me **!vote1** to be displayed as having voted');
 						currentMafia = mafChannel.members.array()[x];
 						mafLocation = x;
 						mafcount[x]++;
 					} else { //villagers
-						mafChannel.members.array()[x].send('You are a villager.');
+						mafChannel.members.array()[x].send('You are a villager. \nUse **!score #-#** to report the games score **before you vote**. \nYour team\'s score - the opposing team\'s score\n');
 						for (x1 = 0; x1 < mafChannel.members.array().length; x1++) {
-							mafChannel.members.array()[x].send(mafChannel.members.array()[x1].displayName + ' - ' + pNumber);
+							mafChannel.members.array()[x].send(mafChannel.members.array()[x1].displayName + ' - ' + (x1 + 1));
 						}
-						mafChannel.members.array()[x].send('EXAMPLE: "!vote1" is a vote for ' + mafChannel.members.array()[0].displayName);
+						mafChannel.members.array()[x].send('EXAMPLE: **!vote1** is a vote for ' + mafChannel.members.array()[0].displayName);
 					}
 				}
 				
@@ -447,7 +457,7 @@ client.on('message', message => {
             //voteChannel.sendMessage(message.author.username + ' says: ' + message.content);
 			//voteChannel.sendMessage(message.author + '');
 			if((message.author.id + '') !== '549959159836311581'){
-				if(newgameflag > 0){
+				if((mafiagameflag > 0)){
 					if ((message.content === '!vote1' || message.content === '!vote2' || message.content === '!vote3' || message.content === '!vote4' || message.content === '!vote5' || message.content === '!vote6') && (totVotes < mafChannel.members.array().length)) {
 						if (message.content === '!vote1') {
 							voteID = 1 - 1;
@@ -468,40 +478,84 @@ client.on('message', message => {
 							voteID = 6 - 1;
 						}
 						
-						//voteChannel.sendMessage('MADE IT');
+						voteChannel.sendMessage('MADE IT');
 						//voteChannel.sendMessage(message.author.id + '');
 						//voteChannel.sendMessage(mafChannel.members.array()[0].id + '');
 						
 						for (x = 0; x < mafChannel.members.array().length; x++) {
-							if ((message.author.id + '') === (mafChannel.members.array()[x].id + '')) {
+							if ((message.author.id + '') === (mafChannel.members.array()[x].id + '')) { //checks to make sure voter is in voice channel and aligns them with their position in the array
 								//voteChannel.sendMessage(message.author + ' has voted!');
 								if (voteArray[x] === 1) {
 									message.author.send('You have already voted.');
 								}
 								if (voteArray[x] === 0) {
 									voteChannel.sendMessage(message.author + ' has voted!');
-									voteArray[x]++;
-									countArray[voteID] = countArray[voteID] + 1;
 									totVotes++;
-									if ((voteID == mafLocation) && (x != mafLocation)) {
-										scoreArray[x]++;
+									if(x != mafLocation){
+										voteArray[x]++;
+										countArray[voteID] = countArray[voteID] + 1;
+									} 
+									if ((voteID === mafLocation) && (x !== mafLocation)) {
+										scoreArray[x] = scoreArray[x] + PointsForCorrectVote;
 									}
-									if (totVotes == mafChannel.members.array().length) {
+									if (totVotes === mafChannel.members.array().length) {
 										voteChannel.sendMessage('Everyone has voted!');
 										if (currentMafia !== '') {
+											for(x1 = 0; x1 < mafChannel.members.array().length; x1++) {
+												if((countArray[x1] > 2) && (x1 !== mafLocation)){
+													scoreArray[x1] = scoreArray[x1] + PointsForNonMafiaVotedByMajority;
+													voteChannel.sendMessage('The villagers mistook ' + mafChannel.members.array()[x1] + ' as the mafia!');
+													memNum = Math.floor(Math.random() * disappointed.length);
+													voteChannel.sendMessage(disappointed[memNum]);
+												}
+												gameScoreArray[x1][0] = 0;
+											}
 											if (countArray[mafLocation] < 3) {
 												voteChannel.sendMessage(currentMafia + ' was the mafiaso!');
-												scoreArray[mafLocation] = scoreArray[mafLocation] + 2;
+												scoreArray[mafLocation] = scoreArray[mafLocation] + PointsForSuccessfulMafia;
 											} else {
 												voteChannel.sendMessage('The villagers caught ' + currentMafia + '!');
 											}
-												currentMafia = '';
+											currentMafia = '';
+											mafiagameflag = 0;
 										}
 									}
 								}
 							}
 						}
-					
+					} else if(message.content.split(' ')[0] === '!score'){
+						//voteChannel.sendMessage(message.content.split(' ')[1])
+						for (x = 0; x < mafChannel.members.array().length; x++) {
+							if ((message.author.id + '') === (mafChannel.members.array()[x].id + '')) { //checks to make sure voter is in voice channel and aligns them with their position in the array
+								if (gameScoreArray[x][0] === 1) {
+									message.author.send('You have already reported the scores as ' + gameScoreArray[x][1] + ' - ' + gameScoreArray[x][2]);
+								}
+								if (gameScoreArray[x][0] === 0) {
+									gameScoreArray[x][0]++;
+									gameScoreArray[x][1] = message.content.split(' ')[0].split('-')[0];
+									gameScoreArray[x][2] = message.content.split(' ')[0].split('-')[1];
+									if(x !== mafLocation){
+										if(gameScoreArray[x][2] > (gameScoreArray[x][1] + 2)){
+											scoreArray[x] = scoreArray[x] + PointsForLosingBy3NonMafia;
+											gameScoreArray[x][2] = gameScoreArray[x][2] - 3; 
+											while(gameScoreArray[x][2] > (gameScoreArray[x][1] + 1)){
+												scoreArray[x] = scoreArray[x] + PointsForLosingBy2MoreNonMafia;
+												gameScoreArray[x][2] = gameScoreArray[x][2] - 2; 
+											}
+										}
+									} else {
+										if(gameScoreArray[x][1] > (gameScoreArray[x][2] + 2)){
+											scoreArray[x] = scoreArray[x] + PointsForWinningBy3Mafia;
+											gameScoreArray[x][1] = gameScoreArray[x][1] - 3; 
+											while(gameScoreArray[x][1] > (gameScoreArray[x][2] + 1)){
+												scoreArray[x] = scoreArray[x] + PointsForWinningBy2MoreMafia;
+												gameScoreArray[x][1] = gameScoreArray[x][1] - 2;
+											}
+										}
+									}
+								}
+							}
+						}
 					} else {
 						//needs a reply to tell the person how to vote but needs to filter out anything the bot says
 					}
@@ -585,8 +639,6 @@ client.on('message', message => {
 				message.channel.send('Mafia is now using the legacy code');
 			}
 		}
-        
-
 });
 //cd desktop\donbot
 // Log our bot in using the token from https://discordapp.com/developers/applications/me
