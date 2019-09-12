@@ -33,11 +33,13 @@ var x4;
 var x5;
 
 //  MAFIA VARIABLES
-var totalMafia;
-var randomMafia;
-var pNumber;
-var mafVotes;
-var totVotes; //counts votes for mafia
+var totalMafia = 0;
+var randomMafia = 0;
+var pNumber = 0;
+var mafVotes = 0;
+var totVotes = 0; //counts votes for mafia
+var tempName = '';
+var tempScore = 0;
 
 //  ARRAYS & MATRIXES
 var playerArray = [6]; //holds player's names
@@ -59,10 +61,10 @@ var winMatch = 0; //holds people waiting in queue
 var lossloc = 0; //holds latest loss value
 var lossMatch = 0; //holds people waiting in queue
 var finals = 0; //holds the number of people who have been kicked from the ladder
-const pongresponses = ['**pong mothafucka**', 'pong', 'ping, ping, ping.  Who is it?', 'DON T TOUCH ME', 'how bout go ping yourself', '||HA, made you look!||', 'https://media.giphy.com/media/l2YWxte7sJB2XuE8M/giphy.gif', 'yeah, yeah, yeah', 'https://media.tenor.com/images/2feea74041feaa70ca7221ae28065f15/tenor.gif', 'https://media.giphy.com/media/xj7FbQfedsi3e/200.gif', 'https://media.giphy.com/media/tSniEbOGfuCnm/giphy.gif', 'https://media.giphy.com/media/hIaC7H5bIFkVa/giphy.gif', 'https://media.giphy.com/media/3o6ZtaZt380S8DlZjG/giphy.gif', 'http://66.media.tumblr.com/b8b71d6eb11c497405c7d90008522e47/tumblr_mh1rlaCmad1s446qto1_500.gif', 'https://media.tenor.com/images/ee97de4ccda02c9666391ff2ec98d5b1/tenor.gif', 'https://media.tenor.com/images/f5889ae897ec5142e8c8bd391de9d025/tenor.gif', 'https://media.giphy.com/media/d1E2qvruXFtGi6A0/giphy.gif'];
-const acknowledges = ['alright, alright, alright', 'Sure thing, boss', 'I gotchu', 'yup, yup', 'finally!', 'is this my purpose?', 'ACKNOWLEDGED', 'I read you', 'Loud and clear'];
+const pongresponses = ['**pong mothafucka**', 'pong', 'ping, ping, ping.  Who is it?', 'DON\'T TOUCH ME', 'how bout go ping yourself', '||Keep your cursor to yourself!||', 'do you see how much more productive I am than you already', '||HA, made you look!||', 'https://media.giphy.com/media/l2YWxte7sJB2XuE8M/giphy.gif', 'yeah, yeah, yeah', 'https://media.tenor.com/images/2feea74041feaa70ca7221ae28065f15/tenor.gif', 'https://media.giphy.com/media/xj7FbQfedsi3e/200.gif', 'https://media.giphy.com/media/tSniEbOGfuCnm/giphy.gif', 'https://media.giphy.com/media/hIaC7H5bIFkVa/giphy.gif', 'https://media.giphy.com/media/3o6ZtaZt380S8DlZjG/giphy.gif', 'http://66.media.tumblr.com/b8b71d6eb11c497405c7d90008522e47/tumblr_mh1rlaCmad1s446qto1_500.gif', 'https://media.tenor.com/images/ee97de4ccda02c9666391ff2ec98d5b1/tenor.gif', 'https://media.tenor.com/images/f5889ae897ec5142e8c8bd391de9d025/tenor.gif', 'https://i.imgur.com/Fb0lJ3P.gif'];
+const acknowledges = ['alright, alright, alright', 'would you like fries with that?', 'Sure thing, boss', 'I gotchu', 'yup, yup', 'finally!', 'is this my purpose?', 'ACKNOWLEDGED', 'I read you', 'Loud and clear'];
 const intro1s = ['1s queue has started - you can use "!1sme" to get added and "!1sdone" to start the 1s ladder and end the queue'];
-const disappointed = ['http://giphygifs.s3.amazonaws.com/media/KJ6evAwpTjexi/giphy.gif', 'thats tough kid', 'maybe next time', 'https://media.giphy.com/media/xT9KVluGDHZvOk0tdC/giphy.gif', 'https://media.giphy.com/media/XFgNKqN3BaHLi/giphy.gif'];
+const disappointed = ['http://giphygifs.s3.amazonaws.com/media/KJ6evAwpTjexi/giphy.gif', 'that\'s tough kid', 'maybe next time', 'https://media.giphy.com/media/xT9KVluGDHZvOk0tdC/giphy.gif', 'https://media.giphy.com/media/XFgNKqN3BaHLi/giphy.gif'];
 
 const randomfullarray = [
     ['Game Speed', 2, 'Slow-Mo', 'Time Warp'],
@@ -364,6 +366,7 @@ client.on('message', message => {
         //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-     MAFIA
 		if (message.content === '!newgame') {
             if(mafleg === 0){
+				
 				if(newgameflag === 0){
 					newgameflag++;
 					for(x = 0; x < mafChannel.members.array().length; x++){
@@ -381,29 +384,33 @@ client.on('message', message => {
 					tempmafcount[randomMafia] = tempmafcount[randomMafia] - 1;
 					randomMafia = Math.floor((Math.random() * 1000) % totalMafia);
 				}
+			
+				//voteChannel.sendMessage(mafChannel.members.array()[0].displayName); //Debug
+				//mafChannel.members.array()[0].send('bet you\'re seeing this'); //Debug
+				
 				totVotes = 0;
 				for (x = 0; x < mafChannel.members.array().length; x++) {
 					pNumber = x + 1; //offset
-					message.channel.send(mafChannel.members.array()[0][x]+ ' - ' + pNumber); //list player's numbers
-					playerArray[x]= mafChannel.members.array()[0][x]; //populating player array
+					message.channel.send(mafChannel.members.array()[x].displayName + ' - ' + (x + 1)); //list player's numbers
+					playerArray[x]= mafChannel.members.array()[x].id; //populating player array
 					voteArray[x]= 0; //clearing votes
 					countArray[x]= 0; //clearing counts
 					mafVotes = 0; //clearing mafia votes
-					message.channel.send(' ' + x); //Debug
-					if (x == randomMafia) { //mafia
-						mafChannel.members.array()[0][x].send('You are the mafiaso.');
-						mafChannel.members.array()[0][x].send('When everyone is voting, just send me "!vote1" to be displayed as having voted');
-						currentMafia = mafChannel.members.array()[0][x];
+					//message.channel.send(' ' + x); //Debug
+					if (x === randomMafia) { //mafia
+						mafChannel.members.array()[x].send('You are the mafiaso.\nWhen everyone is voting, just send me "!vote1" to be displayed as having voted');
+						currentMafia = mafChannel.members.array()[x];
 						mafLocation = x;
 						mafcount[x]++;
 					} else { //villagers
-						mafChannel.members.array()[0][x].send('You are a villager.');
+						mafChannel.members.array()[x].send('You are a villager.');
 						for (x1 = 0; x1 < mafChannel.members.array().length; x1++) {
-							mafChannel.members.array()[0][x].send(mafChannel.members.array()[0][x1] + ' - ' + pNumber);
+							mafChannel.members.array()[x].send(mafChannel.members.array()[x1].displayName + ' - ' + pNumber);
 						}
-						mafChannel.members.array()[0][x].send('EXAMPLE: "!vote1" is a vote for ' + mafChannel.members.array()[0][0]);
+						mafChannel.members.array()[x].send('EXAMPLE: "!vote1" is a vote for ' + mafChannel.members.array()[0].displayName);
 					}
 				}
+				
 			} else {
 				if(newgameflag === 0){
 					newgameflag++;
@@ -424,11 +431,11 @@ client.on('message', message => {
 				}
 				for (x = 0; x < mafChannel.members.array().length; x++) {
 					if (x === randomMafia){
-						mafChannel.members.array()[0,x].send('You are the mafiaso.');
+						mafChannel.members.array()[x].send('You are the mafiaso.');
 						currentMafia = mafChannel.members.array()[0,x];
 						mafcount[x]++;
 					} else {
-						mafChannel.members.array()[0,x].send('You are a villager.');
+						mafChannel.members.array()[x].send('You are a villager.');
 					}
 	
 				}
@@ -438,49 +445,79 @@ client.on('message', message => {
         //Updates villagers' scores and records votes
         if (message.channel.type === 'dm') {
             //voteChannel.sendMessage(message.author.username + ' says: ' + message.content);
-
-            if ((message.content === '!vote1' || message.content === '!vote2' || message.content === '!vote3' || message.content === '!vote4' || message.content === '!vote5' || message.content === '!vote6') && (totVotes < 6)) {
-                if (message.content == '!vote1') {
-                    voteID = 1 - 1;
-                }
-                if (message.content == '!vote2') {
-                    voteID = 2 - 1;
-                }
-                if (message.content == '!vote3') {
-                    voteID = 3 - 1;
-                }
-                if (message.content == '!vote4') {
-                    voteID = 4 - 1;
-                }
-                if (message.content == '!vote5') {
-                    voteID = 5 - 1;
-                }
-                if (message.content == '!vote6') {
-                    voteID = 6 - 1;
-                }
-                for (x = 0; x < mafChannel.members.array().length; x++) {
-                    if (message.id == playerArray[x]) {
-                        voteChannel.sendMessage(message.author.username + ' has voted!');
-                        if (voteArray[x] === 1) {
-                            message.author.username.send('You have already voted.');
-                        }
-                        if (voteArray[x] === 0) {
-                            countArray[voteID] = countArray[voteID] + 1;
-                            totVotes = totVotes + 1;
-                            if ((voteID == mafLocation) && (x != mafLocation)) {
-                                scoreArray[x]++;
-                            }
-                            if (totVotes == mafChannel.members.array().length) {
-                                voteChannel.sendMessage('Everyone has voted!');
-                            }
-                        }
-                    }
-                }
-            }
+			//voteChannel.sendMessage(message.author + '');
+			if((message.author.id + '') !== '549959159836311581'){
+				if(newgameflag > 0){
+					if ((message.content === '!vote1' || message.content === '!vote2' || message.content === '!vote3' || message.content === '!vote4' || message.content === '!vote5' || message.content === '!vote6') && (totVotes < mafChannel.members.array().length)) {
+						if (message.content === '!vote1') {
+							voteID = 1 - 1;
+						}
+						if (message.content === '!vote2') {
+							voteID = 2 - 1;
+						}
+						if (message.content === '!vote3') {
+							voteID = 3 - 1;
+						}
+						if (message.content === '!vote4') {
+							voteID = 4 - 1;
+						}
+						if (message.content === '!vote5') {
+							voteID = 5 - 1;
+						}
+						if (message.content === '!vote6') {
+							voteID = 6 - 1;
+						}
+						
+						//voteChannel.sendMessage('MADE IT');
+						//voteChannel.sendMessage(message.author.id + '');
+						//voteChannel.sendMessage(mafChannel.members.array()[0].id + '');
+						
+						for (x = 0; x < mafChannel.members.array().length; x++) {
+							if ((message.author.id + '') === (mafChannel.members.array()[x].id + '')) {
+								//voteChannel.sendMessage(message.author + ' has voted!');
+								if (voteArray[x] === 1) {
+									message.author.send('You have already voted.');
+								}
+								if (voteArray[x] === 0) {
+									voteChannel.sendMessage(message.author + ' has voted!');
+									voteArray[x]++;
+									countArray[voteID] = countArray[voteID] + 1;
+									totVotes++;
+									if ((voteID == mafLocation) && (x != mafLocation)) {
+										scoreArray[x]++;
+									}
+									if (totVotes == mafChannel.members.array().length) {
+										voteChannel.sendMessage('Everyone has voted!');
+										if (currentMafia !== '') {
+											if (countArray[mafLocation] < 3) {
+												voteChannel.sendMessage(currentMafia + ' was the mafiaso!');
+												scoreArray[mafLocation] = scoreArray[mafLocation] + 2;
+											} else {
+												voteChannel.sendMessage('The villagers caught ' + currentMafia + '!');
+											}
+												currentMafia = '';
+										}
+									}
+								}
+							}
+						}
+					
+					} else {
+						//needs a reply to tell the person how to vote but needs to filter out anything the bot says
+					}
+				} else {
+					if ((message.content === '!vote1' || message.content === '!vote2' || message.content === '!vote3' || message.content === '!vote4' || message.content === '!vote5' || message.content === '!vote6')){
+						memNum = Math.floor(Math.random() * disappointed.length);
+						message.author.send(disappointed[memNum] + '\nwhy are you voting? a game hasn\'t started.  Use "!newgame" to get it started');
+					
+					}
+				}
+			}
         }
         //Updates mafia's score and congradulates winner of round
         if (message.content === '!reveal') {
 			if(mafleg === 0){
+				/*
 				if (currentMafia !== '') {
 					if (countArray[mafLocation] < 3) {
 						message.channel.send(currentMafia + ' was the mafiaso!');
@@ -489,7 +526,7 @@ client.on('message', message => {
 						message.channel.send('The villagers caught ' + currentMafia + '!');
 					}
 					currentMafia = '';
-				}
+				}*/
 			} else {
 				if (currentMafia != '') {
 					voteChannel.send(currentMafia + ' was the mafiaso!');
@@ -497,34 +534,43 @@ client.on('message', message => {
 				}
 			}
         }
+		
+		//ENDGAME DOESN'T WORK
         if (message.content === '!endgame') {
-            var tempName = '';
-            var tempScore = 0;
+            tempName = '';
+            tempScore = 0;
 			newgameflag = 0;
-            for (x = 0; x < mafChannel.members.array().length; x++) {
-                sortedScore[x][0] = playerArray[x];
-                sortedScore[x][1] = scoreArray[x];
-            }
-            //BUBBLE SORT FOR DAYS
-            // 0 location - Winner
-            for (x = 0; x < mafChannel.members.array().length; x++) {
-                for (x1 = 1; x1 < mafChannel.members.array().length; x1++) {
-                    if (sortedScore[x1 - 1][1] < sortedScore[x1][1]) {
-                        tempName = sortedScore[x1 - 1][0];
-                        tempScore = sortedScore[x1 - 1][1];
-                        sortedScore[x1 - 1][0] = sortedScore[x1][0];
-                        sortedScore[x1 - 1][1] = sortedScore[x1][1];
-                        sortedScore[x1][0] = tempName;
-                        sortedScore[x1][1] = tempScore;
-                    }
-                }
-            }
+			if(mafChannel.members.array().length > 1){
+				voteChannel.send('shiza');
+				for (x = 0; x < mafChannel.members.array().length; x++) {
+					sortedScore[x][0] = mafChannel.members.array()[x].displayName;
+					sortedScore[x][1] = scoreArray[x];
+				}
+				//BUBBLE SORT FOR DAYS
+				// 0 location - Winner
+				for (x = 0; x < mafChannel.members.array().length; x++) {
+					for (x1 = 1; x1 < mafChannel.members.array().length; x1++) {
+						if (sortedScore[x1 - 1][1] < sortedScore[x1][1]) {
+							tempName = sortedScore[x1 - 1][0];
+							tempScore = sortedScore[x1 - 1][1];
+							sortedScore[x1 - 1][0] = sortedScore[x1][0];
+							sortedScore[x1 - 1][1] = sortedScore[x1][1];
+							sortedScore[x1][0] = tempName;
+							sortedScore[x1][1] = tempScore;
+						}
+					}
+				}
+				message.channel.send(sortedScore[0][0] + ' won with ' + sortedScore[0][1] + ' points!');
+				for (x = 1; x < mafChannel.members.array().length; x++) {
+					message.channel.send(sortedScore[x][0] + ' - ' + sortedScore[x][1]);
+				}
+				
+			} else {
+				voteChannel.send('playing with yourself again?');
+				memNum = Math.floor(Math.random() * disappointed.length);
+				voteChannel.send(disappointed[memNum]);
+			}
 
-            message.channel.send(sortedScore[0][0] + ' won with ' + sortedScore[0][1] + ' points!');
-
-            for (x = 1; x < mafChannel.members.array().length; x++) {
-                message.channel.send(sortedScore[x][0] + ' - ' + sortedScore[x][1]);
-            }
             //Erases Scores
             for (x = 0; x < mafChannel.members.array().length; x++) {
                 sortedScore[x][0] = '';
