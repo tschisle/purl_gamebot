@@ -600,7 +600,6 @@ client.on('message', message => {
 		tempScore = 0;
 		newgameflag = 0;
 		if(mafChannel.members.array().length > 1){
-			voteChannel.send('shiza');
 			for (x = 0; x < mafChannel.members.array().length; x++) {
 				sortedScorePlayer[x] = mafChannel.members.array()[x].displayName;
 				sortedScoreScore[x] = scoreArray[x];
@@ -639,7 +638,7 @@ client.on('message', message => {
 	if (message.content === '!mafleg') {
 		mafleg = (mafleg + 1)%2;
 		if(mafleg === 0){
-			message.channel.send('Mafia is now using the latest code (*likely unstable*)');
+			message.channel.send('Mafia is now using the latest code');
 		} else {
 			message.channel.send('Mafia is now using the legacy code');
 		}
