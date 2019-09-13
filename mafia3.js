@@ -24,6 +24,7 @@ var mafleg = 0; //toggles legacy mafia code
 var newgameflag = 0; //used to initialize player mafia count
 var mafiagameflag = 0; //used to indicate that a mafia game has started
 var scoreflag = [6]; //lets player know they have to submit the score before voting
+var mafhintflag = 0; //toggle for hint system
 
 //  LOOP VARIABLES
 var x; //first
@@ -47,9 +48,10 @@ const PointsForLosingBy3NonMafia = -1;
 const PointsForWinningBy3Mafia = -1;
 const PointsForLosingBy2MoreNonMafia = -1; //stacks
 const PointsForWinningBy2MoreMafia = -1; //stacks
+const PointsForCorrectVoteWithHint = 1;
 
 //  ARRAYS (matrixes are impossible :/ )
-var playerArray = [6]; //holds player's names
+var playerArray = [6]; //holds player's names - not used
 var voteArray = [6]; //holds player's votes
 var gameScoreArrayReported = [6]; //holds player's reported game scores (bool reported)
 var gameScoreArrayPlayerTeam = [6]; //holds player's reported game scores (int player's team)
@@ -77,6 +79,7 @@ const pongresponses = ['**pong mothafucka**', 'pong', 'ping, ping, ping.  Who is
 const acknowledges = ['alright, alright, alright', 'would you like fries with that?', 'Sure thing, boss', 'I gotchu', 'yup, yup', 'finally!', 'is this my purpose?', 'ACKNOWLEDGED', 'I read you', 'Loud and clear'];
 const intro1s = ['1s queue has started - you can use **!1sme** to get added and **!1sdone** to start the 1s ladder and end the queue'];
 const disappointed = ['http://giphygifs.s3.amazonaws.com/media/KJ6evAwpTjexi/giphy.gif', 'that\'s tough kid', 'maybe next time', 'https://media.giphy.com/media/xT9KVluGDHZvOk0tdC/giphy.gif', 'https://media.giphy.com/media/XFgNKqN3BaHLi/giphy.gif'];
+const mafhintarray = ['double jump', 'single jump', 'use remaining boost', 'go for any 100 boost pad', 'drive directly at the ball for 3 seconds', 'move to your half of the field', 'move to opponent\'s half of the field', 'go for a bump on any car', 'drive towards the center circle for 3 seconds', 'get on the wall'];
 
 const randomfullarray = [
     ['Game Speed', 2, 'Slow-Mo', 'Time Warp'],
@@ -119,7 +122,10 @@ client.on('message', message => {
 		message.channel.send('** - Mafia**  [use **!mafia** to learn more] \n ~ *1s Ladder*  [use **!1sladder** to learn more] \n** - Randomizer**  [use **!random** to get random modifiers for private matches]');
 	}
 	if (message.content === '!mafia') {
-		message.channel.send('*Mafia is a game where one random player attempts to throw a match* \n*The non-mafia, villagers, try to uncover the identity of the mafia* \n*Everyone reports the game score then the villagers vote for who they believe the mafia was* \nJoin Mafia voice channel (6 player max) \nUse **!newgame** to start a new game of Mafia \nDM me, the bot, your votes \nUse **!endgame** to report scores after you\'ve played all the games you\'d like\n\nUse **!mafleg** to switch between legacy and latest code **only do so before starting up a game** \n You\'ll also need to use **!reveal** to reveal the mafia if you\'re using the legacy code');
+		message.channel.send('*Mafia is a game where one random player attempts to throw a match* \n*The non-mafia, villagers, try to uncover the identity of the mafia* \n*Everyone reports the game score then the villagers vote for who they believe the mafia was* \nJoin Mafia voice channel (6 player max) \nUse **!newgame** to start a new game of Mafia \nDM me, the bot, your votes \nUse **!endgame** to report scores after you\'ve played all the games you\'d like\n\nUse **!MafiaScoring** to see how points are given and taken\nUse **!MafiaHint** to toggle hint system (changes correct vote points)\n\nUse **!mafleg** to switch between legacy and latest code **only do so before starting up a game** \nYou\'ll also need to use **!reveal** to reveal the mafia if you\'re using the legacy code');
+	}
+	if (message.content === '!MafiaScoring') {
+		message.channel.send('**+' + PointsForSuccessfulMafia + '** for being a successful Mafia and fooling the villagers (not getting the majority of the votes)\n' + '**+' + (PointsForCorrectVote - (mafhintflag * (PointsForCorrectVote - PointsForCorrectVoteWithHint))) + '** for voting for the mafia as a villager\n' + '**-' + PointsForNonMafiaVotedByMajority + '** for being voted by the majority as the mafia as a villager\n' + '**-' + PointsForLosingBy3NonMafia + '** for losing by 3 as a villager\n' + '**-' + PointsForWinningBy3Mafia + '** for winning by 3 as the mafia\n' + '**-' + PointsForLosingBy2MoreNonMafia + '** for losing by 2 more (stacks) as a villager\n' + '**-' + PointsForWinningBy2MoreMafia + '** for winning by 2 more (stacks) as mafia');
 	}
 	if (message.content === '!1sladder') {
 		message.channel.send('*The ladder is a double elimination bracket without a bracket reset* \n*Currently a 64 player max* \n*Initial matches are randomized, every match after is first come first serve* \nUse **!start1s** to begin player queuing \nUse **!1sme** to join the 1s ladder \nUse **!1sdone** to end player queue and begin the ladder \nUse **!1swon** to declare yourself the winner \nUse **!1shalt** to end the ladder prematurely');
@@ -445,6 +451,14 @@ client.on('message', message => {
 					mafcount[x]++;
 				} else {
 					mafChannel.members.array()[x].send('You are a villager.');
+					if(mafhintflag){
+						mafChannel.members.array()[x].send('*Hint*');
+						memNum = Math.floor(Math.random() * mafhintarray.length);
+						var hinttime = (Math.floor(Math.random() * 42) * 5) + 30;
+						hinttime = (Math.floor(hinttime / 60) * 100) + (hinttime%60);
+						mafChannel.members.array()[x].send('At ' + (Math.floor(hinttime / 100)) + ':' (hinttime % 100) + ' **' + mafhintarray[memNum] + '**');
+						
+					}
 				}
 
 			}
@@ -496,7 +510,7 @@ client.on('message', message => {
 										countArray[voteID] = countArray[voteID] + 1;
 									} 
 									if ((voteID === mafLocation) && (x !== mafLocation)) {
-										scoreArray[x] = scoreArray[x] + PointsForCorrectVote;
+										scoreArray[x] = scoreArray[x] + PointsForCorrectVote - (mafhintflag * (PointsForCorrectVote - PointsForCorrectVoteWithHint));
 									}
 									if (totVotes === mafChannel.members.array().length) {
 										voteChannel.sendMessage('Everyone has voted!');
@@ -641,6 +655,14 @@ client.on('message', message => {
 			message.channel.send('Mafia is now using the latest code');
 		} else {
 			message.channel.send('Mafia is now using the legacy code');
+		}
+	}
+	if (message.content === '!MafiaHint') {
+		mafhintflag = (mafhintflag + 1)%2;
+		if(mafhintflag === 0){
+			message.channel.send('Mafia is **no longer** using the hint system');
+		} else {
+			message.channel.send('Mafia is **now** using the hint system \nUse **!MafiaScoring** to see how the scoring was adjusted');
 		}
 	}
 });
