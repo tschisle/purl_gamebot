@@ -38,7 +38,7 @@ var x5; //fifth nested
 var totalMafia = 0; //legacy variable for holding voice channel count
 var randomMafia = 0; //holds location of randomly assigned mafia
 var totVotes = 0; //counts votes
-
+var hinttime = 0;
 var tempName = ''; //used for bubble sort
 var tempScore = 0; //used for bubble sort
 const PointsForSuccessfulMafia = 3;
@@ -51,7 +51,8 @@ const PointsForWinningBy2MoreMafia = -1; //stacks
 const PointsForCorrectVoteWithHint = 1;
 
 //  ARRAYS (matrixes are impossible :/ )
-var playerArray = [6]; //holds player's names - not used
+var messagearray1 = [24]; //helps mitigate the number of messages sent (the value inside is arbitrary but it just needs to be big enough)
+var messagearray2 = [24]; //helps mitigate the number of messages sent (the value inside is arbitrary but it just needs to be big enough)
 var voteArray = [6]; //holds player's votes
 var gameScoreArrayReported = [6]; //holds player's reported game scores (bool reported)
 var gameScoreArrayPlayerTeam = [6]; //holds player's reported game scores (int player's team)
@@ -387,6 +388,7 @@ client.on('message', message => {
 				newgameflag++;
 				for(x = 0; x < mafChannel.members.array().length; x++){
 					mafcount[x] = 0;
+					scoreArray[x] = 0;
 				}
 			}
 			mafiagameflag++;
@@ -405,26 +407,48 @@ client.on('message', message => {
 			//mafChannel.members.array()[0].send('bet you\'re seeing this'); //Debug
 			
 			totVotes = 0;
+			hinttime = (Math.floor(Math.random() * 24) * 5) + 120; //ranges from 240sec to 120sec
+			hinttime = (Math.floor(hinttime / 60) * 100) + (hinttime%60);
+			memNum = Math.floor(Math.random() * mafhintarray.length);
 			for (x = 0; x < mafChannel.members.array().length; x++) {
-				message.channel.send(mafChannel.members.array()[x].displayName + ' - ' + (x + 1)); //list player's numbers
-				playerArray[x]= mafChannel.members.array()[x].id; //populating player array
+				messagearray1[x] = mafChannel.members.array()[x].displayName + ' - ' + (x + 1); //list player's numbers
 				voteArray[x]= 0; //clearing votes
 				countArray[x]= 0; //clearing counts
 				//message.channel.send(' ' + x); //Debug
-				if (x === randomMafia) { //mafia
-					mafChannel.members.array()[x].send('You are the mafiaso.\nUse **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\nWhen everyone is voting, just send me **!vote1** to be displayed as having voted');
+				if (x === randomMafia) { //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-    mafia
+					if(mafhintflag === 1){
+						messagearray2[0] = '**You are the mafiaso.**\nUse **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\n\nWhen everyone is voting, just send me **!vote1** to be displayed as having voted \n\nHere\'s a list of the possible tasks:\n';
+						for(x1=0;x1 < mafhintarray.length; x1++){
+							messagearray2[x1+1] = '- ' + mafhintarray[x1] + '\n'; 
+						}
+						mafChannel.members.array()[x].send(messagearray2[0] + messagearray2[1] + messagearray2[2] + messagearray2[3] + messagearray2[4] + messagearray2[5] + messagearray2[6] + messagearray2[7] + messagearray2[8] + messagearray2[9] + messagearray2[10]);
+					}else{
+						mafChannel.members.array()[x].send('**You are the mafiaso.**\nUse **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\n\nWhen everyone is voting, just send me **!vote1** to be displayed as having voted');
+					}
 					currentMafia = mafChannel.members.array()[x];
 					mafLocation = x;
 					mafcount[x]++;
-				} else { //villagers
-					mafChannel.members.array()[x].send('You are a villager. \nUse **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\n');
+				} else { //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-    villagers
+					messagearray2[0] = ('**You are a villager.**\nUse **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\n\n');
 					for (x1 = 0; x1 < mafChannel.members.array().length; x1++) {
-						mafChannel.members.array()[x].send(mafChannel.members.array()[x1].displayName + ' - ' + (x1 + 1));
+						messagearray2[x1+1] = (mafChannel.members.array()[x1].displayName + ' - ' + (x1 + 1) + '\n');
 					}
-					mafChannel.members.array()[x].send('EXAMPLE: **!vote1** is a vote for ' + mafChannel.members.array()[0].displayName);
+					if(mafhintflag === 1){
+						//memNum = Math.floor(Math.random() * mafhintarray.length);
+						//var hinttime = (Math.floor(Math.random() * 42) * 5) + 30;
+						//hinttime = (Math.floor(hinttime / 60) * 100) + (hinttime%60);
+						if((hinttime % 100) < 5){ 
+							mafChannel.members.array()[x].send(messagearray2[0] + messagearray2[1] + messagearray2[2] + messagearray2[3] + messagearray2[4] + messagearray2[5] + messagearray2[6] + 'EXAMPLE: **!vote1** is a vote for ' + mafChannel.members.array()[0].displayName + '\n\n' + '*Hint*\n' + 'At ' + (Math.floor(hinttime / 100)) + ':' + '00' + ' **' + mafhintarray[memNum] + '**');
+						} else if((hinttime % 100) < 10){
+							mafChannel.members.array()[x].send(messagearray2[0] + messagearray2[1] + messagearray2[2] + messagearray2[3] + messagearray2[4] + messagearray2[5] + messagearray2[6] + 'EXAMPLE: **!vote1** is a vote for ' + mafChannel.members.array()[0].displayName + '\n\n' + '*Hint*\n' + 'At ' + (Math.floor(hinttime / 100)) + ':' + '05' + ' **' + mafhintarray[memNum] + '**');	
+						} else {
+							mafChannel.members.array()[x].send(messagearray2[0] + messagearray2[1] + messagearray2[2] + messagearray2[3] + messagearray2[4] + messagearray2[5] + messagearray2[6] + 'EXAMPLE: **!vote1** is a vote for ' + mafChannel.members.array()[0].displayName + '\n\n' + '*Hint*\n' + 'At ' + (Math.floor(hinttime / 100)) + ':' + (hinttime % 100) + ' **' + mafhintarray[memNum] + '**');
+						}
+					} else {
+						mafChannel.members.array()[x].send(messagearray2[0] + messagearray2[1] + messagearray2[2] + messagearray2[3] + messagearray2[4] + messagearray2[5] + messagearray2[6] + 'EXAMPLE: **!vote1** is a vote for ' + mafChannel.members.array()[0].displayName);
+					}
 				}
 			}
-			
 		} else {
 			if(newgameflag === 0){
 				newgameflag++;
@@ -451,19 +475,9 @@ client.on('message', message => {
 					mafcount[x]++;
 				} else {
 					mafChannel.members.array()[x].send('You are a villager.');
-					if(mafhintflag){
-						mafChannel.members.array()[x].send('*Hint*');
-						memNum = Math.floor(Math.random() * mafhintarray.length);
-						var hinttime = (Math.floor(Math.random() * 42) * 5) + 30;
-						hinttime = (Math.floor(hinttime / 60) * 100) + (hinttime%60);
-						mafChannel.members.array()[x].send('At ' + (Math.floor(hinttime / 100)) + ':' (hinttime % 100) + ' **' + mafhintarray[memNum] + '**');
-						
-					}
 				}
-
 			}
 		}
-		
 	}
 	//Updates villagers' scores and records votes
 	if (message.channel.type === 'dm') {
@@ -510,14 +524,16 @@ client.on('message', message => {
 										countArray[voteID] = countArray[voteID] + 1;
 									} 
 									if ((voteID === mafLocation) && (x !== mafLocation)) {
-										scoreArray[x] = scoreArray[x] + PointsForCorrectVote - (mafhintflag * (PointsForCorrectVote - PointsForCorrectVoteWithHint));
+										scoreArray[x] = +scoreArray[x] + +PointsForCorrectVote - (mafhintflag * (+PointsForCorrectVote - +PointsForCorrectVoteWithHint));
 									}
 									if (totVotes === mafChannel.members.array().length) {
-										voteChannel.sendMessage('Everyone has voted!');
+										voteChannel.sendMessage('Everyone has voted!\n\n.');
 										if (currentMafia !== '') {
 											for(x3 = 0; x3 < mafChannel.members.array().length; x3++) {
 												if((countArray[x3] > 2) && (x3 !== mafLocation)){
-													scoreArray[x3] = scoreArray[x3] + PointsForNonMafiaVotedByMajority;
+													//message.author.send(message.author + ' - ' + +scoreArray[x3]);
+													scoreArray[x3] = +scoreArray[x3] + +PointsForNonMafiaVotedByMajority;
+													//message.author.send(message.author + ' - ' + +scoreArray[x3]);
 													voteChannel.sendMessage('The villagers mistook ' + mafChannel.members.array()[x3] + ' as the mafia!');
 													memNum = Math.floor(Math.random() * disappointed.length);
 													voteChannel.sendMessage(disappointed[memNum]);
@@ -526,7 +542,9 @@ client.on('message', message => {
 											}
 											if (countArray[mafLocation] < 3) {
 												voteChannel.sendMessage(currentMafia + ' was the mafiaso!');
-												scoreArray[mafLocation] = scoreArray[mafLocation] + PointsForSuccessfulMafia;
+												//message.author.send(message.author + ' - ' + +scoreArray[mafLocation]);
+												scoreArray[mafLocation] = +scoreArray[mafLocation] + +PointsForSuccessfulMafia;
+												//message.author.send(message.author + ' - ' + +scoreArray[mafLocation]);
 											} else {
 												voteChannel.sendMessage('The villagers caught ' + currentMafia + '!');
 											}
@@ -555,19 +573,21 @@ client.on('message', message => {
 								gameScoreArrayOpposingTeam[x] = message.content.split(' ')[0].split('-')[1];
 								if(x !== mafLocation){
 									if(gameScoreArrayOpposingTeam[x] > (gameScoreArrayPlayerTeam[x] + 2)){
-										scoreArray[x] = scoreArray[x] + PointsForLosingBy3NonMafia;
+										//message.author.send(message.author + ' - ' + +scoreArray[x]);
+										scoreArray[x] = +scoreArray[x] + +PointsForLosingBy3NonMafia;
+										//message.author.send(message.author + ' - ' + +scoreArray[x]);
 										gameScoreArrayOpposingTeam[x] = gameScoreArrayOpposingTeam[x] - 3; 
 										while(gameScoreArrayOpposingTeam[x] > (gameScoreArrayPlayerTeam[x] + 1)){
-											scoreArray[x] = scoreArray[x] + PointsForLosingBy2MoreNonMafia;
+											scoreArray[x] = +scoreArray[x] + +PointsForLosingBy2MoreNonMafia;
 											gameScoreArrayOpposingTeam[x] = gameScoreArrayOpposingTeam[x] - 2; 
 										}
 									}
 								} else {
 									if(gameScoreArrayPlayerTeam[x] > (gameScoreArrayOpposingTeam[x] + 2)){
-										scoreArray[x] = scoreArray[x] + PointsForWinningBy3Mafia;
+										scoreArray[x] = +scoreArray[x] + +PointsForWinningBy3Mafia;
 										gameScoreArrayPlayerTeam[x] = gameScoreArrayPlayerTeam[x] - 3; 
 										while(gameScoreArrayPlayerTeam[x] > (gameScoreArrayOpposingTeam[x] + 1)){
-											scoreArray[x] = scoreArray[x] + PointsForWinningBy2MoreMafia;
+											scoreArray[x] = +scoreArray[x] + +PointsForWinningBy2MoreMafia;
 											gameScoreArrayPlayerTeam[x] = gameScoreArrayPlayerTeam[x] - 2;
 										}
 									}
@@ -620,21 +640,28 @@ client.on('message', message => {
 			}
 			//BUBBLE SORT FOR DAYS
 			// 0 location - Winner
+			//for (x = 0; x < 6; x++) {
+			//	for (x1 = 1; x1 < 6; x1++) {
+			for (x = 0; x < 2; x++) {
+			//for (x = 1; x < mafChannel.members.array().length; x++) {
+				message.channel.send(sortedScorePlayer[x] + ' - ' + +sortedScoreScore[x]);
+			}	
 			for (x = 0; x < mafChannel.members.array().length; x++) {
 				for (x1 = 1; x1 < mafChannel.members.array().length; x1++) {
-					if (sortedScoreScore[x1 - 1] < sortedScoreScore[x1]) {
+					if (+sortedScoreScore[x1 - 1] < +sortedScoreScore[x1]) {
 						tempName = sortedScorePlayer[x1 - 1];
-						tempScore = sortedScoreScore[x1 - 1];
+						tempScore = +sortedScoreScore[x1 - 1];
 						sortedScorePlayer[x1 - 1] = sortedScorePlayer[x1];
-						sortedScoreScore[x1 - 1] = sortedScoreScore[x1];
+						sortedScoreScore[x1 - 1] = +sortedScoreScore[x1];
 						sortedScorePlayer[x1] = tempName;
-						sortedScoreScore[x1] = tempScore;
+						sortedScoreScore[x1] = +tempScore;
 					}
 				}
 			}
-			message.channel.send(sortedScorePlayer[0] + ' won with ' + sortedScoreScore[0] + ' points!');
-			for (x = 1; x < mafChannel.members.array().length; x++) {
-				message.channel.send(sortedScorePlayer[x] + ' - ' + sortedScoreScore[x]);
+			message.channel.send(sortedScorePlayer[0] + ' won with ' + +sortedScoreScore[0] + ' points!');
+			for (x = 1; x < 6; x++) {
+			//for (x = 1; x < mafChannel.members.array().length; x++) {
+				message.channel.send(sortedScorePlayer[x] + ' - ' + +sortedScoreScore[x]);
 			}
 			
 		} else {
