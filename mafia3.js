@@ -502,20 +502,20 @@ client.on('message', message => {
 										}
 									}
 									if(((team1score + team2score) !== mafChannel.members.array().length) && (team1score !== team2score)){
-										for(x4=0;x4 < mafChannel.members.array().length; x4++){
+										for(x4=0; x4 < mafChannel.members.array().length; x4++){
 											//if statement checks for someone putting in completely wrong values for game (assumes top person won't mess up - NEEDS TO BE FIXED)
 											if(((gameScoreArrayPlayerTeam[x4] !== team1score) && (gameScoreArrayPlayerTeam[x4] !== team2score)) || ((gameScoreArrayOpposingTeam[x4] !== team1score) && (gameScoreArrayOpposingTeam[x4] !== team2score))){
 												voteChannel.sendMessage(mafChannel.members.array()[x4] + 'didn\'t put in the correct score\n\nIt\'s important to note that once this bot gets connected to google, each player will have a trust factor and putting in the wrong score enough times will cause everyone to have to agree to play with you before any games actually begin \n\n' + mafChannel.members.array()[x4] + '**Resubmit the score in this channel (do not the dm me this time)**');
-												scoreIncorrect+++; //toggles on flag
+												scoreIncorrect++; //toggles on flag
 												gameScoreArrayReported[x4] = 0; // clears score reported element for moron
-												scoreCounter--; //sets score counter down 1
+												scoreCounter = scoreCounter - 1; //sets score counter down 1
 											}													
 										}
-										if(scoreIncorrect === 0)){
+										if(scoreIncorrect === 0){
 											//voteChannel.sendMessage(mafChannel.members.array()[x4] + ' team1 = ' + team1score + ' team2 = ' + team2score + ' playerteam = ' + gameScoreArrayPlayerTeam[x4] + ' opponentteam = ' + gameScoreArrayOpposingTeam[x4]);
 											voteChannel.sendMessage('The scores were not inputted correctly, **everyone needs to resubmit the scores in this channel (do not the dm me this time)**.  We\'ll get this taken care of \n\n' + 'One team had ' + team1scorecounter + ' players and the other team had ' + (mafChannel.members.array().length - team2scorecounter) + ' according to the inputted scores');
 											scoreIncorrect++; //toggles flag on
-											for(x4=0;x4 < mafChannel.members.array().length; x4++){ //clears score reported array
+											for(x4 = 0; x4 < mafChannel.members.array().length; x4++){ //clears score reported array
 												gameScoreArrayReported[x4] = 0;
 											}
 											scoreCounter = 0; //clears score counter
@@ -794,7 +794,6 @@ client.on('message', message => {
 								}
 							}
 						}
-					}
 					}
 				}
 			}
