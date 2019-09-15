@@ -424,7 +424,7 @@ client.on('message', message => {
 					for (x = 0; x < mafChannel.members.array().length; x++) {
 						if ((message.author.id + '') === (mafChannel.members.array()[x].id + '')) { //checks to make sure voter is in voice channel and aligns them with their position in the array
 							//voteChannel.sendMessage(message.author + ' has voted!'); //debugging
-							if((scoreflag[x] === 1) && (scoreIncorrect === 0)){
+							if((gameScoreArrayReported[x] === 1) && (scoreIncorrect === 0)){
 								if (voteArray[x] === 1) {
 									message.author.send('You have already voted.');
 								}
@@ -505,7 +505,7 @@ client.on('message', message => {
 										for(x4=0; x4 < mafChannel.members.array().length; x4++){
 											//if statement checks for someone putting in completely wrong values for game (assumes top person won't mess up - NEEDS TO BE FIXED)
 											if(((gameScoreArrayPlayerTeam[x4] !== team1score) && (gameScoreArrayPlayerTeam[x4] !== team2score)) || ((gameScoreArrayOpposingTeam[x4] !== team1score) && (gameScoreArrayOpposingTeam[x4] !== team2score))){
-												voteChannel.sendMessage(mafChannel.members.array()[x4] + 'didn\'t put in the correct score\n\nIt\'s important to note that once this bot gets connected to google, each player will have a trust factor and putting in the wrong score enough times will cause everyone to have to agree to play with you before any games actually begin \n\n' + mafChannel.members.array()[x4] + '**Resubmit the score in this channel (do not the dm me this time)**');
+												voteChannel.sendMessage(mafChannel.members.array()[x4] + 'didn\'t put in the correct score\n\nIt\'s important to note that once this bot gets connected to google, each player will have a trust factor and putting in the wrong score enough times will cause everyone to have to agree to play with you before any games actually begin \n\n' + mafChannel.members.array()[x4] + '**Resubmit the score in this channel (do not the dm me this time)**\n\nUse **!score #-#** to report the games score\n(*Your team\'s score - the opposing team\'s score*)');
 												scoreIncorrect++; //toggles on flag
 												gameScoreArrayReported[x4] = 0; // clears score reported element for moron
 												scoreCounter = scoreCounter - 1; //sets score counter down 1
@@ -513,7 +513,7 @@ client.on('message', message => {
 										}
 										if(scoreIncorrect === 0){
 											//voteChannel.sendMessage(mafChannel.members.array()[x4] + ' team1 = ' + team1score + ' team2 = ' + team2score + ' playerteam = ' + gameScoreArrayPlayerTeam[x4] + ' opponentteam = ' + gameScoreArrayOpposingTeam[x4]);
-											voteChannel.sendMessage('The scores were not inputted correctly, **everyone needs to resubmit the scores in this channel (do not the dm me this time)**.  We\'ll get this taken care of \n\n' + 'One team had ' + team1scorecounter + ' players and the other team had ' + (mafChannel.members.array().length - team2scorecounter) + ' according to the inputted scores');
+											voteChannel.sendMessage('The scores were not inputted correctly, **everyone needs to resubmit the scores in this channel (do not the dm me this time)**.  We\'ll get this taken care of \n\n' + 'One team had ' + team1scorecounter + ' players and the other team had ' + (mafChannel.members.array().length - team2scorecounter) + ' according to the inputted scores\n\nUse **!score #-#** to report the games score\n(*Your team\'s score - the opposing team\'s score*)');
 											scoreIncorrect++; //toggles flag on
 											for(x4 = 0; x4 < mafChannel.members.array().length; x4++){ //clears score reported array
 												gameScoreArrayReported[x4] = 0;
@@ -795,6 +795,7 @@ client.on('message', message => {
 							}
 						}
 					}
+					scoreIncorrect = 0;
 				}
 			}
 		}
