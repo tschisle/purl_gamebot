@@ -599,19 +599,33 @@ client.on('message', message => {
 				}
 				//Assigns Teams
 				//NOTE: FUTURE VERSIONS SHOULD INCLUDE A WIN % TO EVEN SIDES
-				team1[x] = 0;
-				team2[x] = 0;
+				for(x = 0; x < mafChannel.members.array().length; x++){
+					team1[x] = 0;
+					team2[x] = 0;
+				}
 				team1counter = 0;
 				team2counter = 0;
-				for(x1 = 0; x1 < mafChannel.members.array().length; x1++){
+				/* for(x1 = 0; x1 < mafChannel.members.array().length; x1++){
 					if((team1counter < (mafChannel.members.array().length / 2)) && (team2counter > (mafChannel.members.array().length / 2))){
-						if(Math.floor((Math.random() * 1000) % 2) === 1){
+						if((Math.floor(Math.random() * 1000) >= 500){
 							team1counter++;
 							team1[x1] = 1;
 						} else {
 							team2counter++;
 							team2[x1] = 1;
 						}
+					}
+				} */
+				while(team1counter < (mafChannel.members.array().length / 2)){
+					team2counter = Math.floor((Math.random() * 1000) % mafChannel.members.array().length);
+					if(team1[team2counter] === 0){
+						team1[Math.floor((Math.random() * 1000) % mafChannel.members.array().length)] = 1;
+						team1counter++;
+					}
+				}
+				for(x1 = 0; x1 < mafChannel.members.array().length; x1++){
+					if(team1[x1] === 0){
+						team2[x1] = 1;
 					}
 				}
 				messagearray2 = '';
@@ -635,36 +649,38 @@ client.on('message', message => {
 							}
 							messagearray2 = messagearray2 + 'Use **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\n\nWhen everyone is voting, just send me **!vote1** to be displayed as having voted \n\nHere\'s a list of a few of the possible tasks:\n';
 							//randomly chooses three hints to reveal to the mafia
-							var randhint1 = 0;
-							var randhint2 = 0;
-							var randhint3 = 0;
-							while((randhint1 + randhint2 + randhint3 ) < 1){
-								if(Math.floor((Math.random() * 1000) % 3) === 0){
-									randhint1 = 1;
-								} else if(Math.floor((Math.random() * 1000) % 3) === 0){
-									randhint2 = 1;
-								} else if(Math.floor((Math.random() * 1000) % 3) === 0){
-									randhint3 = 1;
-								} 
-							}
-							if(randhint1 === 0){
-								randhint1 = Math.floor(Math.random() * mafhintarray.length);
-							} else {
+							var randhint1 = -1;
+							var randhint2 = -1;
+							var randhint3 = -1;
+							randhint3 = Math.floor((Math.random() * 1000) % 3);
+							if(randhint3 === 0){
 								randhint1 = memNum;
+							} else if(randhint3 === 1){
+								randhint2 = memNum;
+							} else  {
+								randhint3 = memNum;
 							}
-							if(randhint2 === 0){
+							if(randhint1 === memNum){
 								do{
 									randhint2 = Math.floor(Math.random() * mafhintarray.length);
 								}while (randhint2 === randhint1);
-							} else {
-								randhint1 = memNum;
-							}
-							if(randhint3 === 0){
 								do{
 									randhint3 = Math.floor(Math.random() * mafhintarray.length);
 								}while ((randhint3 === randhint1) || (randhint3 === randhint2));
-							} else {
-								randhint3 = memNum;
+							} else if(randhint2 === memNum){
+								do{
+									randhint1 = Math.floor(Math.random() * mafhintarray.length);
+								}while (randhint2 === randhint1);
+								do{
+									randhint3 = Math.floor(Math.random() * mafhintarray.length);
+								}while ((randhint3 === randhint1) || (randhint3 === randhint2));
+							} else if(randhint3 === memNum){
+								do{
+									randhint1 = Math.floor(Math.random() * mafhintarray.length);
+								}while (randhint1 === randhint3);
+								do{
+									randhint2 = Math.floor(Math.random() * mafhintarray.length);
+								}while ((randhint2 === randhint1) || (randhint3 === randhint2));
 							}
 							messagearray2 = messagearray2 + '- ' + mafhintarray[randhint1] + '\n' + '- ' + mafhintarray[randhint2] + '\n' + '- ' + mafhintarray[randhint3] + '\n';
 							mafChannel.members.array()[x].send(messagearray2);
@@ -693,7 +709,7 @@ client.on('message', message => {
 						} else {
 							messagearray2 = messagearray2 + '```ini\n[Join the BLUE team]```';
 						}
-						messagearray2 = ('Use **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\n\n');
+						messagearray2 = messagearray2 + ('Use **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\n\n');
 						//creates list of players and their corresponding number 
 						for (x1 = 0; x1 < mafChannel.members.array().length; x1++) { 
 							messagearray2 = messagearray2 + (mafChannel.members.array()[x1].displayName + ' - ' + (x1 + 1) + '\n');
