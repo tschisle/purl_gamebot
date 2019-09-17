@@ -454,7 +454,9 @@ client.on('message', message => {
 											if (countArray[mafLocation] < 3) {
 												voteChannel.sendMessage('Everyone has voted!\n\n' + currentMafia + ' was the mafiaso!');
 												//message.author.send(message.author + ' - ' + +scoreArray[mafLocation]);
-												scoreArray[mafLocation] = +scoreArray[mafLocation] + +PointsForSuccessfulMafia;
+												if(gameScoreArrayOpposingTeam[mafLocation] < gameScoreArrayPlayerTeam[mafLocation]){
+													scoreArray[mafLocation] = +scoreArray[mafLocation] + +PointsForSuccessfulMafia;
+												}
 												//message.author.send(message.author + ' - ' + +scoreArray[mafLocation]);
 											} else {
 												voteChannel.sendMessage('Everyone has voted!\n\n' + 'The villagers caught ' + currentMafia + '!');
@@ -571,8 +573,8 @@ client.on('message', message => {
 					for(x = 0; x < mafChannel.members.array().length; x++){
 						mafcount[x] = 0;
 						scoreArray[x] = 0;
-						gameScoreArrayOpposingTeam = 0;
-						gameScoreArrayPlayerTeam = 0;
+						gameScoreArrayOpposingTeam[x] = 0;
+						gameScoreArrayPlayerTeam[x] = 0;
 						sortedScorePlayer[x] = mafChannel.members.array()[x];
 						sortedScoreScore[x] = 0;
 						gameScoreArrayReported[x] = 0;
@@ -581,9 +583,6 @@ client.on('message', message => {
 				} 
 				//Initializes variables for a new game
 				mafiagameflag++;
-				for(x = 0; x < mafChannel.members.array().length; x++){
-					tempmafcount[x] = mafcount[x];
-				}
 				//To try to even out mafia assignments while keeping some randomness
 				//NOTE: this adds more time as more and more games are played
 				randomMafia = Math.floor((Math.random() * 1000) % mafChannel.members.array().length);	
@@ -632,6 +631,9 @@ client.on('message', message => {
 						currentMafia = mafChannel.members.array()[x]; //records user assigned as mafia
 						mafLocation = x; //records location in array of mafia
 						mafcount[x]++; //updates how many times the user has been mafia
+						for(x1 = 0; x1 < mafChannel.members.array().length; x1++){
+							tempmafcount[x1] = mafcount[x1];
+						}
 					} else { //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-    villagers
 						messagearray2[0] = ('**You are a villager.**\nUse **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\n\n');
 						//creates list of players and their corresponding number 
