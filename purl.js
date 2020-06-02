@@ -632,7 +632,7 @@ client.on('message', message => {
 				while(team1counter < (mafChannel.members.array().length / 2)){
 					team2counter = Math.floor((Math.random() * 1000) % mafChannel.members.array().length);
 					if(team1[team2counter] === 0){
-						team1[Math.floor((Math.random() * 1000) % mafChannel.members.array().length)] = 1;
+						team1[team2counter] = 1;
 						team1counter++;
 					}
 				}
