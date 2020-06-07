@@ -443,8 +443,8 @@ client.on('message', message => {
 					for (x = 0; x < mafChannel.members.array().length; x++) {
 						if ((message.author.id + '') === (mafChannel.members.array()[x].id + '')) { //checks to make sure voter is in voice channel and aligns them with their position in the array
 							//voteChannel.sendMessage(message.author + ' has voted!'); //debugging
-							if((gameScoreArrayReported[x] === 1) && (scoreIncorrect === 0)){
-								if (voteArray[x] === 1) {
+							if((gameScoreArrayReported[0] === 1)){ //checks if score was reported
+								if (voteArray[x] === 1) { //checks if voter voted already
 									message.author.send('You have already voted.');
 								}
 								if (voteArray[x] === 0) {
@@ -458,22 +458,27 @@ client.on('message', message => {
 										scoreArray[x] = +scoreArray[x] + +PointsForCorrectVote - (mafhintflag * (+PointsForCorrectVote - +PointsForCorrectVoteWithHint));
 									}
 									if (totVotes === mafChannel.members.array().length) { //checks to see if all votes have been submitted
-										if (currentMafia !== '') {
+										if (currentMafia !== '') { //ensures there is a mafia
 											for(x3 = 0; x3 < mafChannel.members.array().length; x3++) {
-												if((countArray[x3] > 2) && (x3 !== mafLocation)){
+												if((countArray[x3] > 2) && (x3 !== mafLocation)){ //checks if majority votes are not for mafia
 													//message.author.send(message.author + ' - ' + +scoreArray[x3]);
-													scoreArray[x3] = +scoreArray[x3] + +PointsForNonMafiaVotedByMajority;
+													scoreArray[x3] = +scoreArray[x3] + +PointsForNonMafiaVotedByMajority; //updates score
 													//message.author.send(message.author + ' - ' + +scoreArray[x3]);
 													memNum = Math.floor(Math.random() * disappointed.length);
 													voteChannel.sendMessage('\n\n' + 'The villagers mistook ' + mafChannel.members.array()[x3] + ' as the mafia!' + disappointed[memNum]);
 												}
-												gameScoreArrayReported[x3] = 0; 
 											}
 											if (countArray[mafLocation] < 3) {
 												voteChannel.sendMessage('Everyone has voted!\n\n' + currentMafia + ' was the mafiaso!');
 												//message.author.send(message.author + ' - ' + +scoreArray[mafLocation]);
-												if(gameScoreArrayOpposingTeam[mafLocation] < gameScoreArrayPlayerTeam[mafLocation]){
-													scoreArray[mafLocation] = +scoreArray[mafLocation] + +PointsForSuccessfulMafia;
+												if(team1[x4] === 1){ //sort between team1 and team2
+													if(team1score < team2score){
+														scoreArray[mafLocation] = +scoreArray[mafLocation] + +PointsForSuccessfulMafia;
+													}
+												}else{
+													if(team2score < team1score){
+														scoreArray[mafLocation] = +scoreArray[mafLocation] + +PointsForSuccessfulMafia;
+													}
 												}
 												//message.author.send(message.author + ' - ' + +scoreArray[mafLocation]);
 											} else {
@@ -485,11 +490,12 @@ client.on('message', message => {
 									}
 								}
 							} else {
-								message.author.send('You need to report the game\'s score first. \nYou can do it by using the **!score #-#** command, where the first # is for your team\'s score and the second is for the opposing team.');
+								message.author.send('You need to report the game\'s score first. \nYou can do it by using the **!score #-#** command, where the first # is the ORANGE team\'s score and the second is for the BLUE team.');
 							}
 						}
 					}
 				}
+				/*
 				if(message.content.split(' ')[0] === '!score'){
 					//voteChannel.sendMessage(message.content.split(' ')[1]);
 					for (x = 0; x < mafChannel.members.array().length; x++) {
@@ -572,6 +578,7 @@ client.on('message', message => {
 				} else {
 					//needs a reply to tell the person how to vote but needs to filter out anything the bot says
 				}
+				*/
 			} else {
 				if ((message.content === '!vote1' || message.content === '!vote2' || message.content === '!vote3' || message.content === '!vote4' || message.content === '!vote5' || message.content === '!vote6')){
 					memNum = Math.floor(Math.random() * disappointed.length);
@@ -594,7 +601,7 @@ client.on('message', message => {
 						gameScoreArrayPlayerTeam[x] = 0;
 						sortedScorePlayer[x] = mafChannel.members.array()[x];
 						sortedScoreScore[x] = 0;
-						gameScoreArrayReported[x] = 0;
+						gameScoreArrayReported[0] = 0;
 						numberPlayers = mafChannel.members.array().length;
 					}
 				} 
@@ -660,7 +667,7 @@ client.on('message', message => {
 							} else {
 								messagearray2 = messagearray2 + '```ini\n[Join the BLUE team]```';
 							}
-							messagearray2 = messagearray2 + 'Use **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\n\nWhen everyone is voting, just send me **!vote1** to be displayed as having voted \n\nHere\'s a list of a few of the possible tasks:\n';
+							messagearray2 = messagearray2 + 'Use **!score #-#** to report the games score **before you vote**. \n(*ORANGE team\'s score - BLUE team\'s score*)\n\nWhen everyone is voting, just send me **!vote1** to be displayed as having voted \n\nHere\'s a list of a few of the possible tasks:\n';
 							//randomly chooses three hints to reveal to the mafia
 							var randhint1 = -1;
 							var randhint2 = -1;
@@ -705,7 +712,7 @@ client.on('message', message => {
 							} else {
 								messagearray2 = messagearray2 + '```ini\n[Join the BLUE team]```';
 							}
-							messagearray2 = messagearray2 + 'Use **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\n\nWhen everyone is voting, just send me **!vote1** to be displayed as having voted';
+							messagearray2 = messagearray2 + 'Use **!score #-#** to report the games score **before you vote**. \n(*ORANGE team\'s score - BLUE team\'s score*)\n\nWhen everyone is voting, just send me **!vote1** to be displayed as having voted';
 							mafChannel.members.array()[x].send(messagearray2);
 							messagearray2 = ''; //clears messagearray2 to help prevent message leaks 
 						}
@@ -722,7 +729,7 @@ client.on('message', message => {
 						} else {
 							messagearray2 = messagearray2 + '```ini\n[Join the BLUE team]```';
 						}
-						messagearray2 = messagearray2 + ('Use **!score #-#** to report the games score **before you vote**. \n(*Your team\'s score - the opposing team\'s score*)\n\n');
+						messagearray2 = messagearray2 + ('Use **!score #-#** to report the games score **before you vote**. \n(*ORANGE team\'s score - BLUE team\'s score*)\n\n');
 						//creates list of players and their corresponding number 
 						for (x1 = 0; x1 < mafChannel.members.array().length; x1++) { 
 							messagearray2 = messagearray2 + (mafChannel.members.array()[x1].displayName + ' - ' + (x1 + 1) + '\n');
@@ -832,39 +839,58 @@ client.on('message', message => {
 			}
 			console.log('Mafia ended');
 		}
-		if ((message.content.split(' ')[0] === '!score') && (scoreIncorrect === 1)){
-			for(x = 0; x < mafChannel.members.array().length; x++){
-				if((gameScoreArrayReported[x] === 0) && ((message.author.id + '') === (mafChannel.members.array()[x].id + ''))){
-					message.react('👍'); //👍message.react('✔️');
-					gameScoreArrayReported[x]++;
-					gameScoreArrayPlayerTeam[x] = +message.content.split(' ')[1].split('-')[0];
-					gameScoreArrayOpposingTeam[x] = +message.content.split(' ')[1].split('-')[1];
-					scoreCounter++;
-				}
-				if(scoreCounter === mafChannel.members.array().length){
-					for(x4 = 0; x4 < mafChannel.members.array().length; x4++){
-						if(x4 !== mafLocation){
-							if(gameScoreArrayOpposingTeam[x4] > (gameScoreArrayPlayerTeam[x4] + 2)){
-								scoreArray[x4] = +scoreArray[x4] + +PointsForLosingBy3NonMafia;
-								gameScoreArrayOpposingTeam[x4] = gameScoreArrayOpposingTeam[x4] - 3; 
-								while(gameScoreArrayOpposingTeam[x4] > (gameScoreArrayPlayerTeam[x4] + 1)){
-									scoreArray[x4] = +scoreArray[x4] + +PointsForLosingBy2MoreNonMafia;
-									gameScoreArrayOpposingTeam[x4] = gameScoreArrayOpposingTeam[x4] - 2; 
+		if ((message.content.split(' ')[0] === '!score')){
+			if(mafiagameflag > 0){
+				message.react('👍'); //👍message.react('✔️');
+				message.channel.send('Suffrage enabled');
+				team1score = +message.content.split(' ')[1].split('-')[0];
+				team2score = +message.content.split(' ')[1].split('-')[1];
+				gameScoreArrayReported[0] = 1; //sets flag
+				for(x4 = 0; x4 < mafChannel.members.array().length; x4++){
+					if(team1[x4] === 1){ //sort between team1 and team2
+						if(x4 !== mafLocation){ //sort out mafia from villagers
+							if(team2score > team1score + 2)){ //checks if villager lost by at least 3
+								scoreArray[x4] = +scoreArray[x4] + +PointsForLosingBy3NonMafia; //updates score
+								tempScore = team2score - 3; //holds adjusted opposing team score
+								while(tempScore > (team1score + 1)){ // checks if adjusted opposing team score is greater than team score
+									scoreArray[x4] = +scoreArray[x4] + +PointsForLosingBy2MoreNonMafia; //updates score
+									tempScore = tempScore - 2; //adjusts opposing team score
 								}
 							}
 						} else {
-							if(gameScoreArrayPlayerTeam[x4] > (gameScoreArrayOpposingTeam[x4] + 2)){
-								scoreArray[x4] = +scoreArray[x4] + +PointsForWinningBy3Mafia;
-								gameScoreArrayPlayerTeam[x4] = gameScoreArrayPlayerTeam[x4] - 3; 
-								while(gameScoreArrayPlayerTeam[x4] > (gameScoreArrayOpposingTeam[x4] + 1)){
-									scoreArray[x4] = +scoreArray[x4] + +PointsForWinningBy2MoreMafia;
-									gameScoreArrayPlayerTeam[x4] = gameScoreArrayPlayerTeam[x4] - 2;
+							if(team1score > (team2score + 2)){ //checks if mafia won by at least 3
+								scoreArray[x4] = +scoreArray[x4] + +PointsForWinningBy3Mafia; //updates score
+								tempScore = team1score - 3; //holds adjusted team score
+								while(tempScore > (team2score + 1)){ // checks if adjusted team score is greater than opposing team score
+									scoreArray[x4] = +scoreArray[x4] + +PointsForLosingBy2MoreNonMafia; //updates score
+									tempScore = tempScore - 2; //adjusts team score
+								}
+							}
+						}
+					} else{
+						if(x4 !== mafLocation){ //sort out mafia from villagers
+							if(team1score > team2score + 2)){ //checks if villager lost by at least 3
+								scoreArray[x4] = +scoreArray[x4] + +PointsForLosingBy3NonMafia; //updates score
+								tempScore = team1score - 3; //holds adjusted opposing team score
+								while(tempScore > (team2score + 1)){ // checks if adjusted opposing team score is greater than team score
+									scoreArray[x4] = +scoreArray[x4] + +PointsForLosingBy2MoreNonMafia; //updates score
+									tempScore = tempScore - 2; //adjusts opposing team score
+								}
+							}
+						} else {
+							if(team2score > (team1score + 2)){ //checks if mafia won by at least 3
+								scoreArray[x4] = +scoreArray[x4] + +PointsForWinningBy3Mafia; //updates score
+								tempScore = team2score - 3; //holds adjusted team score
+								while(tempScore > (team1score + 1)){ // checks if adjusted team score is greater than opposing team score
+									scoreArray[x4] = +scoreArray[x4] + +PointsForLosingBy2MoreNonMafia; //updates score
+									tempScore = tempScore - 2; //adjusts team score
 								}
 							}
 						}
 					}
-					scoreIncorrect = 0;
-				}
+				}				
+			} else { //if no game is created
+				
 			}
 		}
 		if (message.content === '!mafleg') {
